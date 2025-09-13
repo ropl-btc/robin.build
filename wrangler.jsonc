@@ -26,9 +26,9 @@
   // 1) Create an R2 bucket in your Cloudflare account (e.g. "robin-build-next-inc-cache")
   // 2) Set the bucket name here and keep the binding name EXACTLY "NEXT_INC_CACHE_R2_BUCKET"
   "r2_buckets": [
-    // {
-    //   "binding": "NEXT_INC_CACHE_R2_BUCKET",
-    //   "bucket_name": "robin-build-next-inc-cache",
-    // },
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "robin-build-next-inc-cache",
+    },
   ],
 }
