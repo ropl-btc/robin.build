@@ -1,0 +1,4 @@
+name = "robin-build-worker"
+main = ".vercel/output/static/_worker.js"
+compatibility_flags = ["nodejs_compat"]
+type = "javascript"
