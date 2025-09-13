@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare/dev";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+// Enable OpenNext Cloudflare integration for `next dev`
+initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {};
-
-export default initOpenNextCloudflareForDev(nextConfig);
+export default nextConfig;
