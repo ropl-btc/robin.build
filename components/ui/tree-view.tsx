@@ -11,7 +11,7 @@ export type TreeNode = {
   label: string;
   icon?: React.ReactNode;
   children?: TreeNode[];
-  data?: any;
+  data?: unknown;
 };
 
 export type TreeViewProps = {
@@ -47,7 +47,7 @@ export function TreeView({
   animateExpand = true,
 }: TreeViewProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    new Set(defaultExpandedIds),
+    new Set(defaultExpandedIds)
   );
   const [internalSelectedIds, setInternalSelectedIds] =
     useState<string[]>(selectedIds);
@@ -61,12 +61,16 @@ export function TreeView({
       setExpandedIds((prev) => {
         const newSet = new Set(prev);
         const isExpanded = newSet.has(nodeId);
-        isExpanded ? newSet.delete(nodeId) : newSet.add(nodeId);
+        if (isExpanded) {
+          newSet.delete(nodeId);
+        } else {
+          newSet.add(nodeId);
+        }
         onNodeExpand?.(nodeId, !isExpanded);
         return newSet;
       });
     },
-    [onNodeExpand],
+    [onNodeExpand]
   );
 
   const handleSelection = useCallback(
@@ -83,9 +87,11 @@ export function TreeView({
         newSelection = currentSelectedIds.includes(nodeId) ? [] : [nodeId];
       }
 
-      isControlled
-        ? onSelectionChange?.(newSelection)
-        : setInternalSelectedIds(newSelection);
+      if (isControlled) {
+        onSelectionChange?.(newSelection);
+      } else {
+        setInternalSelectedIds(newSelection);
+      }
     },
     [
       selectable,
@@ -93,14 +99,14 @@ export function TreeView({
       currentSelectedIds,
       isControlled,
       onSelectionChange,
-    ],
+    ]
   );
 
   const renderNode = (
     node: TreeNode,
     level = 0,
     isLast = false,
-    parentPath: boolean[] = [],
+    parentPath: boolean[] = []
   ) => {
     const hasChildren = (node.children?.length ?? 0) > 0;
     const isExpanded = expandedIds.has(node.id);
@@ -125,7 +131,7 @@ export function TreeView({
             "flex items-center py-2 px-3 cursor-pointer transition-all duration-200 relative group rounded-md mx-1",
             "hover:bg-accent/50",
             isSelected && "bg-accent/80",
-            selectable && "hover:border-accent-foreground/10",
+            selectable && "hover:border-accent-foreground/10"
           )}
           style={{ paddingLeft: level * indent + 8 }}
           onClick={(e) => {
@@ -194,9 +200,7 @@ export function TreeView({
           )}
 
           {/* Label */}
-          <span className="text-sm font truncate flex-1">
-            {node.label}
-          </span>
+          <span className="text-sm font truncate flex-1">{node.label}</span>
         </motion.div>
 
         {/* Children */}
@@ -226,8 +230,8 @@ export function TreeView({
                     child,
                     level + 1,
                     index === node.children!.length - 1,
-                    currentPath,
-                  ),
+                    currentPath
+                  )
                 )}
               </motion.div>
             </motion.div>
@@ -241,7 +245,7 @@ export function TreeView({
     <motion.div
       className={cn(
         "w-full bg-background border border-border rounded-xl",
-        className,
+        className
       )}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -249,7 +253,7 @@ export function TreeView({
     >
       <div className="p-2">
         {data.map((node, index) =>
-          renderNode(node, 0, index === data.length - 1),
+          renderNode(node, 0, index === data.length - 1)
         )}
       </div>
     </motion.div>

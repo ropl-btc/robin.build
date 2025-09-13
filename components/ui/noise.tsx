@@ -6,18 +6,27 @@ function Noise({
   patternScaleY = 1,
   patternRefreshInterval = 2,
   patternAlpha = 15,
+}: {
+  patternSize?: number;
+  patternScaleX?: number;
+  patternScaleY?: number;
+  patternRefreshInterval?: number;
+  patternAlpha?: number;
 }) {
-  const grainRef = useRef(null);
+  const grainRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = grainRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     let frame = 0;
 
     const patternCanvas = document.createElement("canvas");
     patternCanvas.width = patternSize;
     patternCanvas.height = patternSize;
     const patternCtx = patternCanvas.getContext("2d");
+    if (!patternCtx) return;
     const patternData = patternCtx.createImageData(patternSize, patternSize);
     const patternPixelDataLength = patternSize * patternSize * 4;
 
@@ -41,8 +50,12 @@ function Noise({
 
     const drawGrain = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = ctx.createPattern(patternCanvas, "repeat");
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const pattern = ctx.createPattern(patternCanvas, "repeat");
+      if (pattern) {
+        // fillStyle accepts CanvasPattern (string | CanvasGradient | CanvasPattern | null)
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
     };
 
     const loop = () => {

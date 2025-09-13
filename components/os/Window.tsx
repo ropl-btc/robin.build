@@ -12,7 +12,7 @@ interface WindowProps {
   onClose?: () => void;
   onMinimize?: () => void;
   /** Pass a ref to constrain dragging within this element. Optional. */
-  dragConstraints?: React.RefObject<Element> | false;
+  dragConstraints?: React.RefObject<HTMLElement | null> | false;
   /** Initial top offset in pixels. */
   top?: number;
   initialWidth?: number;
@@ -57,7 +57,7 @@ export function Window({
 
   const startResize = (
     edge: "right" | "bottom" | "corner",
-    e: React.PointerEvent,
+    e: React.PointerEvent
   ) => {
     if (maximized) return;
     e.preventDefault();
@@ -101,7 +101,7 @@ export function Window({
         maximized
           ? "inset-0 left-0 top-0 w-screen h-screen"
           : "left-1/2 -translate-x-1/2",
-        className,
+        className
       )}
       style={
         maximized
@@ -120,7 +120,7 @@ export function Window({
         className={cn(
           "relative flex items-center gap-2 border-b border-border px-4",
           "h-10 select-none",
-          maximized ? "cursor-default" : "cursor-move",
+          maximized ? "cursor-default" : "cursor-move"
         )}
         onPointerDown={(e) => (!maximized ? controls.start(e) : undefined)}
       >
@@ -158,7 +158,7 @@ export function Window({
       <div
         className={cn(
           "flex h-full min-h-0 flex-col overflow-hidden",
-          bodyClassName,
+          bodyClassName
         )}
       >
         {children}

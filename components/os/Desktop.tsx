@@ -77,7 +77,7 @@ export function Desktop({ className, name }: DesktopProps) {
         <button
           className={cn(
             "group flex w-24 flex-col items-center gap-2 rounded-md p-2",
-            "transition-colors hover:bg-foreground/5 focus:outline-none",
+            "transition-colors hover:bg-foreground/5 focus:outline-none"
           )}
           aria-label="Files"
           onClick={openFiles}
@@ -86,7 +86,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className={cn(
               "flex h-12 w-12 items-center justify-center rounded-md",
               "bg-foreground/5 text-foreground",
-              "group-hover:bg-foreground/10",
+              "group-hover:bg-foreground/10"
             )}
           >
             <Folder className="h-6 w-6" />
