@@ -2,3 +2,8 @@ name = "robin-build-worker"
 main = ".vercel/output/static/_worker.js"
 compatibility_flags = ["nodejs_compat"]
 type = "javascript"
+
+# For Cloudflare Pages: point to the directory produced by the next-on-pages build
+# so Pages can find the static output and the generated Worker. This is required
+# for Pages to treat this file as a Pages build config.
+pages_build_output_dir = ".vercel/output/static"
