@@ -39,6 +39,8 @@ This repo is a Next.js 15 + TypeScript app styled with Tailwind CSS v4 and linte
 ## Agent-Specific Notes
 
 - Make minimal diffs. Touch only what you change. Run ESLint and Prettier on edited files. Keep things KISS and DRY.
+- NEVER ignore es-lint; NEVER use the 'any' type and try to avoid 'unknown' type.
+- Do NOT use magic strings, use enums or constants instead if possible.
 
 ## UI
 

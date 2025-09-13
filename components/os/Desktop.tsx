@@ -57,6 +57,26 @@ export function Desktop({ className, name }: DesktopProps) {
     return () => clearInterval(id);
   }, []);
   const displayName = name ?? "{name}";
+
+  // Z-order management for windows
+  const [, setZCounter] = useState(20);
+  const [zMap, setZMap] = useState<Record<string, number>>({});
+  const bringToFront = useCallback((key: string) => {
+    setZCounter((z) => {
+      const next = z + 1;
+      setZMap((m) => ({ ...m, [key]: next }));
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    if (filesOpen) bringToFront("files");
+  }, [filesOpen, bringToFront]);
+  useEffect(() => {
+    if (calcOpen) bringToFront("calc");
+  }, [calcOpen, bringToFront]);
+  useEffect(() => {
+    if (notesOpen) bringToFront("notes");
+  }, [notesOpen, bringToFront]);
   return (
     <div
       className={cn("relative min-h-screen w-full select-none", className)}
@@ -77,16 +97,19 @@ export function Desktop({ className, name }: DesktopProps) {
         <button
           className={cn(
             "group flex w-24 flex-col items-center gap-2 rounded-md p-2",
-            "transition-colors hover:bg-foreground/5 focus:outline-none"
+            "transition-colors hover:bg-foreground/5 focus:outline-none",
           )}
           aria-label="Files"
-          onClick={openFiles}
+          onClick={() => {
+            openFiles();
+            bringToFront("files");
+          }}
         >
           <div
             className={cn(
               "flex h-12 w-12 items-center justify-center rounded-md",
               "bg-foreground/5 text-foreground",
-              "group-hover:bg-foreground/10"
+              "group-hover:bg-foreground/10",
             )}
           >
             <Folder className="h-6 w-6" />
@@ -104,17 +127,26 @@ export function Desktop({ className, name }: DesktopProps) {
               {
                 icon: Folder,
                 label: "Files",
-                onClick: openFiles,
+                onClick: () => {
+                  openFiles();
+                  bringToFront("files");
+                },
               },
               {
                 icon: Calculator,
                 label: "Calculator",
-                onClick: openCalc,
+                onClick: () => {
+                  openCalc();
+                  bringToFront("calc");
+                },
               },
               {
                 icon: StickyNote,
                 label: "Notes",
-                onClick: openNotes,
+                onClick: () => {
+                  openNotes();
+                  bringToFront("notes");
+                },
               },
               {
                 icon: isDark ? SunDim : Moon,
@@ -128,8 +160,14 @@ export function Desktop({ className, name }: DesktopProps) {
 
       {/* App windows */}
       {filesOpen && (
-        <div className="pointer-events-none absolute inset-0 z-20">
-          <div className="pointer-events-auto">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: zMap.files ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("files")}
+          >
             <Window
               title="Files — Recents"
               onClose={closeFiles}
@@ -145,8 +183,14 @@ export function Desktop({ className, name }: DesktopProps) {
       )}
 
       {calcOpen && (
-        <div className="pointer-events-none absolute inset-0 z-20">
-          <div className="pointer-events-auto">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: zMap.calc ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("calc")}
+          >
             <Window
               title="Calculator"
               onClose={closeCalc}
@@ -165,8 +209,14 @@ export function Desktop({ className, name }: DesktopProps) {
       )}
 
       {notesOpen && (
-        <div className="pointer-events-none absolute inset-0 z-20">
-          <div className="pointer-events-auto">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: zMap.notes ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("notes")}
+          >
             <Window
               title="Notes"
               onClose={closeNotes}

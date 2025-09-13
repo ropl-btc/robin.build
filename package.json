@@ -13,6 +13,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@blocknote/core": "^0.37.0",
+    "@blocknote/react": "^0.37.0",
+    "@blocknote/shadcn": "^0.37.0",
     "@opennextjs/cloudflare": "^1.8.2",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",

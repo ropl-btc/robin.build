@@ -1,5 +1,41 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@blocknote/core/fonts/inter.css";
+@import "@blocknote/shadcn/style.css";
+
+/* Ensure Tailwind picks up classes used by @blocknote/shadcn */
+@source "../node_modules/@blocknote/shadcn/**/*.{js,ts,jsx,tsx}";
+
+/* BlockNote overrides to match app aesthetics */
+.bn-container {
+  /* Remove grey card background and rounding */
+  --bn-colors-editor-background: transparent;
+  --bn-border-radius: 0px;
+  font-size: 0.92rem; /* slightly smaller overall scale */
+}
+
+.bn-container[data-color-scheme="dark"] {
+  --bn-colors-editor-background: transparent;
+}
+
+/* Tighter left/right padding and no rounded card */
+.bn-container .bn-editor {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  padding-inline: 12px !important; /* default is 54px */
+}
+
+/* Slightly smaller base text size */
+.bn-default-styles {
+  font-size: 14px; /* was 16px */
+}
+
+/* Stronger contrast for body text in light mode, per BlockNote theming */
+.bn-container[data-color-scheme="light"] .bn-editor {
+  color: #000 !important;
+}
+
+/* Revert H1 sizing override – use BlockNote defaults */
 
 @custom-variant dark (&:is(.dark *));
 
