@@ -1,40 +1,43 @@
 # Repository Guidelines
 
-This repo is a Next.js 15 + TypeScript app styled with Tailwind CSS v4 and linted with ESLint. Keep changes small, focused, and easy to review.
+This project is a small “web OS” built with Next.js 15 + TypeScript, styled with Tailwind CSS v4, and deployed to Cloudflare Workers via OpenNext. Keep diffs minimal and focused.
 
-## Project Structure & Module Organization
+## Project Structure & Modules
 
-- `app/` — App Router route segments, `layout.tsx`, `page.tsx`, global styles in `app/globals.css`.
-- `components/` — Reusable UI; `components/magicui/` holds Magic UI pieces; `components/magicui/` holds custom UI pieces. Files use PascalCase.
-- `lib/` — Utilities (e.g., `lib/utils.ts` with `cn`). Path alias `@/*` maps to repo root.
-- `public/` — Static assets.
-- Config: `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `tsconfig.json`.
+- `app/` — App Router; global styles in `app/globals.css`; terminal → Desktop flow in `app/page.tsx`.
+- `components/os/` — Desktop, `Window` (drag/resize), Dock, `StatusClock`, app windows (Files, Calculator, Notes).
+- `components/magicui/` — Magic UI widgets (`morphing-text`, terminal).
+- `components/ui/` — Primitives (`badge`, `button`, `calendar`, `sliding-number`, `noise`).
+- `lib/utils.ts` — `cn` helper. Path alias `@/*` maps to repo root.
+- Config: `next.config.ts`, `open-next.config.ts`, `wrangler.jsonc`, `eslint.config.mjs`, `postcss.config.mjs`, `tsconfig.json`.
 
-## Build, Test, and Development Commands
+## Dev, Build, Deploy
 
-- Dev: `bun dev` (or `npm run dev`) — starts Turbopack at http://localhost:3000.
-- Build: `bun run build` — production build.
-- Start: `bun start` — serve production build.
-- Lint: `bun run lint` — ESLint (extends `next/core-web-vitals`).
+- Dev: `bun dev` — Next dev with Cloudflare compat (`initOpenNextCloudflareForDev`).
+- Lint: `bun run lint`.
+- Preview (Workers): `bun run preview`.
+- Deploy (Workers): `bun run deploy` (OpenNext build + publish). Assets upload: `bun run upload`. Typegen: `bun run cf-typegen`.
 
-## Coding Style & Naming Conventions
+## Architecture Notes
 
-- TypeScript (strict), 2‑space indentation.
-- Components: PascalCase (`Button.tsx`). Hooks: `useX.ts`. Route folders: kebab-case.
-- Prefer server-first components; add `"use client"` only when necessary.
-- Tailwind lives in `app/globals.css`. Keep class lists readable; compose via `cn(...)` from `lib/utils.ts`.
-- Format with Prettier 3 (installed). Example: `bunx prettier --write path/to/file`.
+- Boot sequence: terminal runs and prompts for name; then Desktop mounts. Background noise + `MorphingText` show a time‑aware greeting (“good morning/evening {name}”).
+- Windows: draggable/resizable; last interaction brings to front; Dock clicks also refocus existing windows.
+- Clock: animated HH:MM:SS via `SlidingNumber`; clicking the date opens a view‑only `Calendar`.
 
-## Commit & Pull Request Guidelines
+## Style & Conventions
 
-- Use Conventional Commits (e.g., `feat:`, `fix:`, `chore:`).
-- PRs include: clear summary, linked issues, screenshots/GIFs for UI, and rationale for notable choices.
-- Before review: run lint, ensure type checks pass, and confirm the app builds locally.
+- TypeScript (strict), 2‑space indent. Components PascalCase; hooks `useX.ts`; route folders kebab‑case.
+- Prefer server‑first; add "use client" only when needed. Keep Tailwind class lists readable; compose via `cn(...)`.
+- Format only touched files with Prettier 3.
 
-## Security & Configuration Tips
+## Testing
 
-- Secrets live in `.env.local` (never commit). Only expose via `NEXT_PUBLIC_` when required in the browser.
-- Do not import server-only code into client components.
+- None configured. If adding, use Vitest + React Testing Library; colocate `*.test.ts(x)` and add a `test` script.
+
+## Security & Cloudflare
+
+- Secrets in `.env.local` (never commit). Only expose `NEXT_PUBLIC_` to the client.
+- Worker entry: `.open-next/worker.js`. Optional ISR cache via R2 (`wrangler.jsonc`: `NEXT_INC_CACHE_R2_BUCKET`).
 
 ## Agent-Specific Notes
 

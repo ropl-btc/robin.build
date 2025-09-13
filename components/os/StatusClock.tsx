@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { SlidingNumber } from "@/components/ui/sliding-number";
 import { Calendar } from "@/components/ui/calendar";
+import { Power } from "lucide-react";
 
 export default function StatusClock() {
   const [now, setNow] = useState<Date>(new Date());
@@ -47,6 +48,22 @@ export default function StatusClock() {
           <span className="ml-1 text-muted-foreground">{ampm}</span>
         </span>
       </Badge>
+      {/* Power button: hard navigate to landing to reset state */}
+      <button
+        type="button"
+        aria-label="Go to home"
+        onClick={() => {
+          try {
+            window.location.assign("/");
+          } catch {
+            // Fallback
+            window.location.href = "/";
+          }
+        }}
+        className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10"
+      >
+        <Power className="h-4 w-4" />
+      </button>
       {calendarOpen ? (
         <div
           className="pointer-events-auto fixed inset-0 z-20"
