@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { SlidingNumber } from "@/components/ui/sliding-number";
+import { Calendar } from "@/components/ui/calendar";
 
 export default function StatusClock() {
   const [now, setNow] = useState<Date>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -26,8 +28,14 @@ export default function StatusClock() {
 
   return (
     <div className="pointer-events-none absolute right-3 top-2 z-10 flex items-center gap-2">
-      <Badge variant="secondary" className="font-mono tracking-tight">
-        {date}
+      <Badge
+        asChild
+        variant="secondary"
+        className="font-mono tracking-tight pointer-events-auto cursor-pointer select-none"
+      >
+        <button type="button" onClick={() => setCalendarOpen((v) => !v)}>
+          {date}
+        </button>
       </Badge>
       <Badge variant="secondary" className="font-mono tracking-tight">
         <span className="flex items-center gap-1 tabular-nums">
@@ -39,6 +47,27 @@ export default function StatusClock() {
           <span className="ml-1 text-muted-foreground">{ampm}</span>
         </span>
       </Badge>
+      {calendarOpen ? (
+        <div
+          className="pointer-events-auto fixed inset-0 z-20"
+          onClick={() => setCalendarOpen(false)}
+        >
+          <div
+            className="absolute right-2 top-10 rounded-xl border border-border bg-background p-2 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Calendar
+              mode="single"
+              selected={now}
+              initialFocus
+              classNames={{
+                day_button:
+                  "pointer-events-none cursor-default group-data-[selected]:rounded-full hover:rounded-full group-[.range-start]:rounded-full group-[.range-end]:rounded-full group-[.range-middle]:rounded-full",
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

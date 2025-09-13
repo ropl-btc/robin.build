@@ -2,10 +2,11 @@
 
 import { Dock } from "@/components/ui/dock";
 import { cn } from "@/lib/utils";
-import { Folder, Calculator, SunDim, Moon } from "lucide-react";
+import { Folder, Calculator, SunDim, Moon, StickyNote } from "lucide-react";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { FilesApp } from "@/components/os/apps/FilesApp";
 import CalculatorApp from "@/components/os/apps/CalculatorApp";
+import NotesApp from "@/components/os/apps/NotesApp";
 import { Window } from "@/components/os/Window";
 import StatusClock from "@/components/os/StatusClock";
 import { MorphingText } from "@/components/magicui/morphing-text";
@@ -22,6 +23,9 @@ export function Desktop({ className, name }: DesktopProps) {
   const [calcOpen, setCalcOpen] = useState(false);
   const openCalc = useCallback(() => setCalcOpen(true), []);
   const closeCalc = useCallback(() => setCalcOpen(false), []);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const openNotes = useCallback(() => setNotesOpen(true), []);
+  const closeNotes = useCallback(() => setNotesOpen(false), []);
   const desktopRef = useRef<HTMLDivElement | null>(null);
   // Theme toggle for Dock
   const [isDark, setIsDark] = useState(false);
@@ -108,6 +112,11 @@ export function Desktop({ className, name }: DesktopProps) {
                 onClick: openCalc,
               },
               {
+                icon: StickyNote,
+                label: "Notes",
+                onClick: openNotes,
+              },
+              {
                 icon: isDark ? SunDim : Moon,
                 label: "Theme",
                 onClick: toggleTheme,
@@ -150,6 +159,23 @@ export function Desktop({ className, name }: DesktopProps) {
               resizable={false}
             >
               <CalculatorApp />
+            </Window>
+          </div>
+        </div>
+      )}
+
+      {notesOpen && (
+        <div className="pointer-events-none absolute inset-0 z-20">
+          <div className="pointer-events-auto">
+            <Window
+              title="Notes"
+              onClose={closeNotes}
+              onMinimize={closeNotes}
+              dragConstraints={desktopRef}
+              initialWidth={820}
+              initialHeight={560}
+            >
+              <NotesApp />
             </Window>
           </div>
         </div>
