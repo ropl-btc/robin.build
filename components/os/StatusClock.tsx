@@ -9,6 +9,7 @@ import { Power } from "lucide-react";
 export default function StatusClock() {
   const [now, setNow] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [clockOpen, setClockOpen] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -26,6 +27,12 @@ export default function StatusClock() {
     month: "short",
     day: "2-digit",
   }).format(now);
+  const fullDate = new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(now);
 
   return (
     <div className="pointer-events-none absolute right-3 top-2 z-10 flex items-center gap-2">
@@ -34,19 +41,38 @@ export default function StatusClock() {
         variant="secondary"
         className="font-mono tracking-tight pointer-events-auto cursor-pointer select-none"
       >
-        <button type="button" onClick={() => setCalendarOpen((v) => !v)}>
+        <button
+          type="button"
+          onClick={() => {
+            setCalendarOpen((v) => !v);
+            setClockOpen(false);
+          }}
+        >
           {date}
         </button>
       </Badge>
-      <Badge variant="secondary" className="font-mono tracking-tight">
-        <span className="flex items-center gap-1 tabular-nums">
-          <SlidingNumber value={hours12} padStart />
-          <span>:</span>
-          <SlidingNumber value={minutes} padStart />
-          <span>:</span>
-          <SlidingNumber value={seconds} padStart />
-          <span className="ml-1 text-muted-foreground">{ampm}</span>
-        </span>
+      <Badge
+        asChild
+        variant="secondary"
+        className="font-mono tracking-tight pointer-events-auto cursor-pointer select-none"
+      >
+        <button
+          type="button"
+          aria-label="Open clock"
+          onClick={() => {
+            setClockOpen((v) => !v);
+            setCalendarOpen(false);
+          }}
+        >
+          <span className="flex items-center gap-1 tabular-nums">
+            <SlidingNumber value={hours12} padStart />
+            <span>:</span>
+            <SlidingNumber value={minutes} padStart />
+            <span>:</span>
+            <SlidingNumber value={seconds} padStart />
+            <span className="ml-1 text-muted-foreground">{ampm}</span>
+          </span>
+        </button>
       </Badge>
       {/* Power button: hard navigate to landing to reset state */}
       <button
@@ -82,6 +108,31 @@ export default function StatusClock() {
                   "pointer-events-none cursor-default group-data-[selected]:rounded-full hover:rounded-full group-[.range-start]:rounded-full group-[.range-end]:rounded-full group-[.range-middle]:rounded-full",
               }}
             />
+          </div>
+        </div>
+      ) : null}
+      {clockOpen ? (
+        <div
+          className="pointer-events-auto fixed inset-0 z-20"
+          onClick={() => setClockOpen(false)}
+        >
+          <div
+            className="absolute right-2 top-10 w-[min(92vw,420px)] rounded-xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur md:p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-end justify-center gap-1.5 text-5xl font-mono tabular-nums md:gap-2 md:text-6xl">
+              <SlidingNumber value={hours12} padStart />
+              <span>:</span>
+              <SlidingNumber value={minutes} padStart />
+              <span>:</span>
+              <SlidingNumber value={seconds} padStart />
+              <span className="mb-1 text-sm text-muted-foreground md:text-base">
+                {ampm}
+              </span>
+            </div>
+            <div className="mt-2 text-center text-xs text-muted-foreground md:text-sm">
+              {fullDate}
+            </div>
           </div>
         </div>
       ) : null}
