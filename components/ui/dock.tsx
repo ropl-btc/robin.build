@@ -42,13 +42,13 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
         onClick={onClick}
         className={cn(
           "relative group rounded-lg",
-          compact ? "p-1.5" : "p-3",
+          compact ? "p-2" : "p-3",
           "hover:bg-secondary transition-colors",
           className
         )}
       >
         <Icon
-          className={cn("text-foreground", compact ? "w-4 h-4" : "w-5 h-5")}
+          className={cn("text-foreground", compact ? "w-5 h-5" : "w-5 h-5")}
         />
         <span
           className={cn(
@@ -69,8 +69,8 @@ DockIconButton.displayName = "DockIconButton";
 
 const Dock = React.forwardRef<HTMLDivElement, DockProps>(
   ({ items, className, compact = false }, ref) => {
-    const outerH = compact ? "h-14" : "h-64";
-    const innerH = compact ? "h-14" : "h-64";
+    const outerH = compact ? "h-[4.5rem]" : "h-64";
+    const innerH = compact ? "h-[4.5rem]" : "h-64";
     return (
       <div
         ref={ref}

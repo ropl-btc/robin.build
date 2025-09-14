@@ -10,6 +10,9 @@ import NotesApp from "@/components/os/apps/NotesApp";
 import { Window } from "@/components/os/Window";
 import StatusClock from "@/components/os/StatusClock";
 import { MorphingText } from "@/components/magicui/morphing-text";
+import TextReaderApp from "@/components/os/apps/TextReaderApp";
+import ImageViewerApp from "@/components/os/apps/ImageViewerApp";
+import SnakeApp from "@/components/os/apps/SnakeApp";
 
 interface DesktopProps {
   className?: string;
@@ -26,6 +29,56 @@ export function Desktop({ className, name }: DesktopProps) {
   const [notesOpen, setNotesOpen] = useState(false);
   const openNotes = useCallback(() => setNotesOpen(true), []);
   const closeNotes = useCallback(() => setNotesOpen(false), []);
+  const [snakeOpen, setSnakeOpen] = useState(false);
+  const openSnake = useCallback(() => setSnakeOpen(true), []);
+  const closeSnake = useCallback(() => setSnakeOpen(false), []);
+  // Z-order management for windows (declare early so callbacks can depend on it)
+  const [, setZCounter] = useState(20);
+  const [zMap, setZMap] = useState<Record<string, number>>({});
+  const bringToFront = useCallback((key: string) => {
+    setZCounter((z) => {
+      const next = z + 1;
+      setZMap((m) => ({ ...m, [key]: next }));
+      return next;
+    });
+  }, []);
+  const [textReader, setTextReader] = useState<{
+    open: boolean;
+    fileName?: string;
+    content?: string;
+  }>({ open: false });
+  const openTextReader = useCallback(
+    (payload: { fileName: string; content: string }) => {
+      setTextReader({
+        open: true,
+        fileName: payload.fileName,
+        content: payload.content,
+      });
+      bringToFront("text");
+    },
+    [bringToFront]
+  );
+  const closeTextReader = useCallback(() => setTextReader({ open: false }), []);
+  const [imageViewer, setImageViewer] = useState<{
+    open: boolean;
+    fileName?: string;
+    src?: string;
+  }>({ open: false });
+  const openImageViewer = useCallback(
+    (payload: { fileName: string; src: string }) => {
+      setImageViewer({
+        open: true,
+        fileName: payload.fileName,
+        src: payload.src,
+      });
+      bringToFront("image");
+    },
+    [bringToFront]
+  );
+  const closeImageViewer = useCallback(
+    () => setImageViewer({ open: false }),
+    []
+  );
   const desktopRef = useRef<HTMLDivElement | null>(null);
   // Theme toggle for Dock
   const [isDark, setIsDark] = useState(false);
@@ -58,16 +111,6 @@ export function Desktop({ className, name }: DesktopProps) {
   }, []);
   const displayName = name ?? "{name}";
 
-  // Z-order management for windows
-  const [, setZCounter] = useState(20);
-  const [zMap, setZMap] = useState<Record<string, number>>({});
-  const bringToFront = useCallback((key: string) => {
-    setZCounter((z) => {
-      const next = z + 1;
-      setZMap((m) => ({ ...m, [key]: next }));
-      return next;
-    });
-  }, []);
   useEffect(() => {
     if (filesOpen) bringToFront("files");
   }, [filesOpen, bringToFront]);
@@ -77,6 +120,9 @@ export function Desktop({ className, name }: DesktopProps) {
   useEffect(() => {
     if (notesOpen) bringToFront("notes");
   }, [notesOpen, bringToFront]);
+  useEffect(() => {
+    if (snakeOpen) bringToFront("snake");
+  }, [snakeOpen, bringToFront]);
   return (
     <div
       className={cn("relative min-h-screen w-full select-none", className)}
@@ -97,7 +143,7 @@ export function Desktop({ className, name }: DesktopProps) {
         <button
           className={cn(
             "group flex w-24 flex-col items-center gap-2 rounded-md p-2",
-            "transition-colors hover:bg-foreground/5 focus:outline-none",
+            "transition-colors hover:bg-foreground/5 focus:outline-none"
           )}
           aria-label="Files"
           onClick={() => {
@@ -109,7 +155,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className={cn(
               "flex h-12 w-12 items-center justify-center rounded-md",
               "bg-foreground/5 text-foreground",
-              "group-hover:bg-foreground/10",
+              "group-hover:bg-foreground/10"
             )}
           >
             <Folder className="h-6 w-6" />
@@ -169,14 +215,32 @@ export function Desktop({ className, name }: DesktopProps) {
             onPointerDown={() => bringToFront("files")}
           >
             <Window
-              title="Files — Recents"
+              title="Files"
               onClose={closeFiles}
               onMinimize={closeFiles}
               dragConstraints={desktopRef}
               initialWidth={980}
               initialHeight={600}
             >
-              <FilesApp />
+              <FilesApp
+                onOpenText={openTextReader}
+                onOpenImage={openImageViewer}
+                onOpenApp={({ appId }) => {
+                  if (appId === "calculator") {
+                    openCalc();
+                    bringToFront("calc");
+                  } else if (appId === "notes") {
+                    openNotes();
+                    bringToFront("notes");
+                  } else if (appId === "snake") {
+                    openSnake();
+                    bringToFront("snake");
+                  } else if (appId === "files") {
+                    openFiles();
+                    bringToFront("files");
+                  }
+                }}
+              />
             </Window>
           </div>
         </div>
@@ -226,6 +290,81 @@ export function Desktop({ className, name }: DesktopProps) {
               initialHeight={560}
             >
               <NotesApp />
+            </Window>
+          </div>
+        </div>
+      )}
+
+      {textReader.open && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: (zMap as Record<string, number>)["text"] ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("text")}
+          >
+            <Window
+              title={textReader.fileName ?? "Text Reader"}
+              onClose={closeTextReader}
+              onMinimize={closeTextReader}
+              dragConstraints={desktopRef}
+              initialWidth={780}
+              initialHeight={520}
+            >
+              <TextReaderApp
+                fileName={textReader.fileName ?? "Untitled.txt"}
+                content={textReader.content ?? ""}
+              />
+            </Window>
+          </div>
+        </div>
+      )}
+
+      {imageViewer.open && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: (zMap as Record<string, number>)["image"] ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("image")}
+          >
+            <Window
+              title={imageViewer.fileName ?? "Image Viewer"}
+              onClose={closeImageViewer}
+              onMinimize={closeImageViewer}
+              dragConstraints={desktopRef}
+              initialWidth={720}
+              initialHeight={560}
+            >
+              <ImageViewerApp
+                fileName={imageViewer.fileName ?? "image"}
+                src={imageViewer.src ?? ""}
+              />
+            </Window>
+          </div>
+        </div>
+      )}
+
+      {snakeOpen && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: (zMap as Record<string, number>)["snake"] ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("snake")}
+          >
+            <Window
+              title="Snake"
+              onClose={closeSnake}
+              onMinimize={closeSnake}
+              dragConstraints={desktopRef}
+              initialWidth={520}
+              initialHeight={640}
+            >
+              <SnakeApp />
             </Window>
           </div>
         </div>

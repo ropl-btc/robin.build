@@ -6,16 +6,24 @@ import {
   Folder,
   FileText,
   Image as ImageIcon,
-  HardDrive,
   Home,
   Download,
   AppWindow,
   Clock,
-  Cloud,
+  Globe,
+  Calculator as CalculatorIcon,
+  StickyNote,
+  Gamepad2,
 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
 interface FilesAppProps {
   className?: string;
+  onOpenText?: (payload: { fileName: string; content: string }) => void;
+  onOpenImage?: (payload: { fileName: string; src: string }) => void;
+  onOpenApp?: (payload: {
+    appId: "calculator" | "notes" | "files" | "snake";
+  }) => void;
 }
 
 const sidebarData: TreeNode[] = [
@@ -59,25 +67,271 @@ const sidebarData: TreeNode[] = [
       },
     ],
   },
-  {
-    id: "locations",
-    label: "Locations",
-    children: [
-      {
-        id: "icould",
-        label: "iCloud Drive",
-        icon: <Cloud className="h-4 w-4" />,
-      },
-      {
-        id: "mac-hd",
-        label: "Macintosh HD",
-        icon: <HardDrive className="h-4 w-4" />,
-      },
-    ],
-  },
 ];
 
-export function FilesApp({ className }: FilesAppProps) {
+// Minimal in-memory VFS
+type FileType = "folder" | "text" | "link" | "app" | "image";
+type FileEntry = {
+  name: string;
+  type: FileType;
+  icon: React.ReactNode;
+  modified: string;
+  children?: FileEntry[];
+  content?: string;
+  href?: string;
+  src?: string;
+  appId?: "calculator" | "notes" | "files" | "snake";
+};
+
+const VFS_DATE = {
+  RECENT: "Sep 12, 2025",
+  MID: "Sep 11, 2025",
+  OLDER: "Sep 10, 2025",
+} as const;
+
+const makeVfsRoot = (): Record<string, FileEntry> => {
+  const desktop: FileEntry = {
+    name: "Desktop",
+    type: "folder",
+    icon: <Home className="h-4 w-4" />,
+    modified: VFS_DATE.RECENT,
+    children: [
+      {
+        name: "Files",
+        type: "app",
+        icon: <AppWindow className="h-4 w-4" />,
+        modified: VFS_DATE.MID,
+      },
+    ],
+  };
+
+  const documents: FileEntry = {
+    name: "Documents",
+    type: "folder",
+    icon: <FileText className="h-4 w-4" />,
+    modified: VFS_DATE.MID,
+    children: [
+      {
+        name: "design-notes.md",
+        type: "text",
+        icon: <FileText className="h-4 w-4" />,
+        modified: VFS_DATE.RECENT,
+        content: `# Design Notes\n\nThis is a small web OS experiment.\n\n- Windows: drag, resize, z-order\n- Dock: quick launch\n- Files: simple VFS and text reader`,
+      },
+    ],
+  };
+
+  const robinBuildFolder: FileEntry = {
+    name: "robin.build",
+    type: "folder",
+    icon: <Folder className="h-4 w-4" />,
+    modified: VFS_DATE.OLDER,
+    children: [
+      {
+        name: "Visit robin.build",
+        type: "link",
+        icon: <Globe className="h-4 w-4" />,
+        modified: VFS_DATE.OLDER,
+        href: "https://robin.build",
+      },
+    ],
+  };
+
+  const code: FileEntry = {
+    name: "code",
+    type: "folder",
+    icon: <Folder className="h-4 w-4" />,
+    modified: VFS_DATE.OLDER,
+    children: [robinBuildFolder],
+  };
+
+  const images: FileEntry = {
+    name: "Images",
+    type: "folder",
+    icon: <ImageIcon className="h-4 w-4" />,
+    modified: VFS_DATE.MID,
+    children: [
+      {
+        name: "icon.png",
+        type: "image",
+        icon: <ImageIcon className="h-4 w-4" />,
+        modified: VFS_DATE.RECENT,
+        src: "/icon.png",
+      },
+      ((): FileEntry => {
+        const liquidiumChildren: FileEntry[] = [
+          {
+            name: "liquidium_black_horizontal.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_black_horizontal.png",
+          },
+          {
+            name: "liquidium_black_logomark.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_black_logomark.png",
+          },
+          {
+            name: "liquidium_black_vertical.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_black_vertical.png",
+          },
+          {
+            name: "liquidium_logo-black-circle.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_logo-black-circle.png",
+          },
+          {
+            name: "liquidium_logo-black-square.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_logo-black-square.png",
+          },
+          {
+            name: "liquidium_logo-white-circle.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_logo-white-circle.png",
+          },
+          {
+            name: "liquidium_logo-white-square.png",
+            type: "image",
+            icon: <ImageIcon className="h-4 w-4" />,
+            modified: VFS_DATE.MID,
+            src: "/images/liquidium-images/liquidium_logo-white-square.png",
+          },
+        ];
+        return {
+          name: "liquidium",
+          type: "folder",
+          icon: <Folder className="h-4 w-4" />,
+          modified: VFS_DATE.MID,
+          children: liquidiumChildren,
+        };
+      })(),
+    ],
+  };
+
+  return {
+    desktop,
+    applications: {
+      name: "Applications",
+      type: "folder",
+      icon: <AppWindow className="h-4 w-4" />,
+      modified: VFS_DATE.OLDER,
+      children: [
+        {
+          name: "Calculator",
+          type: "app",
+          icon: <CalculatorIcon className="h-4 w-4" />,
+          modified: VFS_DATE.MID,
+          appId: "calculator",
+        },
+        {
+          name: "Notes",
+          type: "app",
+          icon: <StickyNote className="h-4 w-4" />,
+          modified: VFS_DATE.MID,
+          appId: "notes",
+        },
+        {
+          name: "Snake",
+          type: "app",
+          icon: <Gamepad2 className="h-4 w-4" />,
+          modified: VFS_DATE.MID,
+          appId: "snake",
+        },
+      ],
+    },
+    documents,
+    downloads: {
+      name: "Downloads",
+      type: "folder",
+      icon: <Download className="h-4 w-4" />,
+      modified: VFS_DATE.OLDER,
+      children: [],
+    },
+    images,
+    code,
+    "robin-build": robinBuildFolder,
+    liquidium: images.children?.find(
+      (c) => c.name === "liquidium"
+    ) as FileEntry,
+  } as const;
+};
+
+export function FilesApp({
+  className,
+  onOpenText,
+  onOpenImage,
+  onOpenApp,
+}: FilesAppProps) {
+  const vfs = useMemo(() => makeVfsRoot(), []);
+  const [currentFolderId, setCurrentFolderId] = useState<string>("desktop");
+
+  const currentFolder: FileEntry | null = useMemo(() => {
+    return (
+      (vfs as Record<string, FileEntry | undefined>)[currentFolderId] ?? null
+    );
+  }, [vfs, currentFolderId]);
+
+  const items: FileEntry[] = currentFolder?.children ?? [];
+
+  const handleNodeClick = useCallback(
+    (node: TreeNode) => {
+      // Map tree node ids to VFS keys
+      const targetId = node.id;
+      if (targetId in vfs) {
+        setCurrentFolderId(targetId);
+      }
+    },
+    [vfs]
+  );
+
+  const handleOpen = useCallback(
+    (entry: FileEntry) => {
+      if (entry.type === "folder") {
+        // Find by name match among vfs keys for known folders
+        const byName = Object.entries(vfs).find(
+          ([, v]) => v.name === entry.name
+        );
+        if (byName) setCurrentFolderId(byName[0]);
+        return;
+      }
+      if (entry.type === "link" && entry.href) {
+        try {
+          window.open(entry.href, "_blank", "noopener,noreferrer");
+        } catch {}
+        return;
+      }
+      if (entry.type === "text" && entry.content) {
+        onOpenText?.({ fileName: entry.name, content: entry.content });
+        return;
+      }
+      if (entry.type === "image") {
+        const src = entry.src ?? `/` + entry.name;
+        onOpenImage?.({ fileName: entry.name, src });
+        return;
+      }
+      if (entry.type === "app" && entry.appId) {
+        onOpenApp?.({ appId: entry.appId });
+        return;
+      }
+    },
+    [onOpenText, onOpenImage, onOpenApp, vfs]
+  );
+
+  const toolbarTitle = currentFolder?.name ?? "Recents";
+
   return (
     <div className={cn("flex min-h-0 flex-1", className)}>
       {/* Sidebar */}
@@ -85,39 +339,39 @@ export function FilesApp({ className }: FilesAppProps) {
         <TreeView
           data={sidebarData}
           className="bg-transparent border-0"
-          defaultExpandedIds={["favorites", "locations"]}
+          defaultExpandedIds={["favorites", "code"]}
           showLines={false}
+          onNodeClick={handleNodeClick}
         />
       </div>
 
       {/* Content */}
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b border-border/80 px-3 py-2">
-          <div className="text-sm font-medium">Recents</div>
+        <div className="flex items-center justify-between border-b border-border/80 px-6 py-3">
+          <div className="text-sm font-medium">{toolbarTitle}</div>
           <div className="text-xs text-muted-foreground">
-            Sorted by Date Last Opened
+            Double-click to open
           </div>
         </div>
         {/* List */}
-        <div className="flex-1 overflow-auto p-2">
-          <table className="w-full text-sm">
+        <div className="flex-1 overflow-auto p-3">
+          <table className="w-full text-sm border-separate border-spacing-y-2">
             <thead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <tr className="text-muted-foreground">
-                <th className="py-2 pr-2 text-left font-normal">Name</th>
+                <th className="py-2 pr-2 pl-3 text-left font-normal">Name</th>
                 <th className="py-2 px-2 text-left font-normal">Kind</th>
-                <th className="py-2 pl-2 text-left font-normal">
-                  Date Last Opened
-                </th>
+                <th className="py-2 pl-2 text-left font-normal">Modified</th>
               </tr>
             </thead>
             <tbody>
-              {sampleFiles.map((f) => (
+              {items.map((f) => (
                 <tr
                   key={f.name}
-                  className="border-t border-border/50 hover:bg-accent/40"
+                  className="cursor-default group"
+                  onDoubleClick={() => handleOpen(f)}
                 >
-                  <td className="py-2 pr-2">
+                  <td className="py-2 pr-2 pl-3 rounded-l-md group-hover:bg-accent/40 transition-colors">
                     <div className="flex items-center gap-2">
                       <span className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground">
                         {f.icon}
@@ -125,8 +379,12 @@ export function FilesApp({ className }: FilesAppProps) {
                       <span>{f.name}</span>
                     </div>
                   </td>
-                  <td className="py-2 px-2 text-muted-foreground">{f.kind}</td>
-                  <td className="py-2 pl-2 text-muted-foreground">{f.date}</td>
+                  <td className="py-2 px-2 text-muted-foreground group-hover:bg-accent/40 transition-colors">
+                    {f.type}
+                  </td>
+                  <td className="py-2 pl-2 text-muted-foreground rounded-r-md group-hover:bg-accent/40 transition-colors">
+                    {f.modified}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -136,27 +394,3 @@ export function FilesApp({ className }: FilesAppProps) {
     </div>
   );
 }
-
-// Simple icons not exported by lucide directly in small form factors
-// All icons use lucide-react; no custom SVGs.
-
-const sampleFiles = [
-  {
-    name: "design-notes.md",
-    kind: "Markdown Document",
-    date: "Sep 12, 2025",
-    icon: <FileText className="h-4 w-4" />,
-  },
-  {
-    name: "light.png",
-    kind: "PNG image",
-    date: "Sep 11, 2025",
-    icon: <ImageIcon className="h-4 w-4" />,
-  },
-  {
-    name: "robin.build",
-    kind: "Folder",
-    date: "Sep 10, 2025",
-    icon: <Folder className="h-4 w-4" />,
-  },
-];
