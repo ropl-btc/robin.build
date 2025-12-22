@@ -13,7 +13,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@blocknote/core": "^0.37.0",
+    "@blocknote/core": "^0.45.0",
     "@blocknote/react": "^0.37.0",
     "@blocknote/shadcn": "^0.37.0",
     "@opennextjs/cloudflare": "^1.14.7",
