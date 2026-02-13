@@ -2,21 +2,80 @@
 
 import { Dock } from "@/components/ui/dock";
 import { cn } from "@/lib/utils";
-import { Folder, Calculator, SunDim, Moon, StickyNote } from "lucide-react";
-import { useState, useCallback, useRef, useEffect } from "react";
+import Image from "next/image";
+import {
+  Folder,
+  Calculator,
+  SunDim,
+  Moon,
+  StickyNote,
+  FileText,
+} from "lucide-react";
+import {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { FilesApp } from "@/components/os/apps/FilesApp";
 import CalculatorApp from "@/components/os/apps/CalculatorApp";
 import NotesApp from "@/components/os/apps/NotesApp";
-import { Window } from "@/components/os/Window";
-import StatusClock from "@/components/os/StatusClock";
+import { AppWindow } from "@/components/os/AppWindow";
+import StatusBar from "@/components/os/StatusBar";
 import { MorphingText } from "@/components/magicui/morphing-text";
 import TextReaderApp from "@/components/os/apps/TextReaderApp";
 import ImageViewerApp from "@/components/os/apps/ImageViewerApp";
 import SnakeApp from "@/components/os/apps/SnakeApp";
+import {
+  DESKTOP_README_CONTENT,
+  DESKTOP_README_FILE_NAME,
+  getShortcutIconSrc,
+  PROJECT_WEB_SHORTCUTS,
+} from "@/lib/desktop-shortcuts";
 
 interface DesktopProps {
   className?: string;
   name?: string;
+}
+
+interface DesktopShortcutButtonProps {
+  label: string;
+  ariaLabel: string;
+  icon: ReactNode;
+  onClick: () => void;
+}
+
+/** Shared desktop shortcut tile so all shortcuts use one visual language. */
+function DesktopShortcutButton({
+  label,
+  ariaLabel,
+  icon,
+  onClick,
+}: DesktopShortcutButtonProps) {
+  return (
+    <button
+      className={cn(
+        "group flex w-28 flex-col items-center gap-2 rounded-md p-2",
+        "transition-colors hover:bg-foreground/5 focus:outline-none",
+      )}
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      <div
+        className={cn(
+          "flex h-12 w-12 items-center justify-center rounded-md",
+          "bg-foreground/5 text-foreground transition-colors",
+          "group-hover:bg-foreground/10",
+        )}
+      >
+        {icon}
+      </div>
+      <span className="text-center text-xs leading-4 text-foreground/90">
+        {label}
+      </span>
+    </button>
+  );
 }
 
 export function Desktop({ className, name }: DesktopProps) {
@@ -56,7 +115,7 @@ export function Desktop({ className, name }: DesktopProps) {
       });
       bringToFront("text");
     },
-    [bringToFront]
+    [bringToFront],
   );
   const closeTextReader = useCallback(() => setTextReader({ open: false }), []);
   const [imageViewer, setImageViewer] = useState<{
@@ -73,11 +132,11 @@ export function Desktop({ className, name }: DesktopProps) {
       });
       bringToFront("image");
     },
-    [bringToFront]
+    [bringToFront],
   );
   const closeImageViewer = useCallback(
     () => setImageViewer({ open: false }),
-    []
+    [],
   );
   const desktopRef = useRef<HTMLDivElement | null>(null);
   // Theme toggle for Dock
@@ -123,6 +182,16 @@ export function Desktop({ className, name }: DesktopProps) {
   useEffect(() => {
     if (snakeOpen) bringToFront("snake");
   }, [snakeOpen, bringToFront]);
+
+  /** Opens an external website in a new tab with a strict opener policy. */
+  const openExternalUrl = useCallback((href: string) => {
+    try {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } catch {
+      window.location.assign(href);
+    }
+  }, []);
+
   return (
     <div
       className={cn("relative min-h-screen w-full select-none", className)}
@@ -135,33 +204,51 @@ export function Desktop({ className, name }: DesktopProps) {
           className="text-foreground font-mono opacity-10"
         />
       </div>
-      {/* Top-right status clock */}
-      <StatusClock />
+      {/* Top-right status bar */}
+      <StatusBar />
 
       {/* Desktop icons */}
-      <div className="absolute left-6 top-6 grid gap-6">
-        <button
-          className={cn(
-            "group flex w-24 flex-col items-center gap-2 rounded-md p-2",
-            "transition-colors hover:bg-foreground/5 focus:outline-none"
-          )}
-          aria-label="Files"
+      <div className="absolute left-4 top-6 grid gap-4 sm:left-6">
+        <DesktopShortcutButton
+          label="Files"
+          ariaLabel="Files"
           onClick={() => {
             openFiles();
             bringToFront("files");
           }}
-        >
-          <div
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-md",
-              "bg-foreground/5 text-foreground",
-              "group-hover:bg-foreground/10"
-            )}
-          >
-            <Folder className="h-6 w-6" />
-          </div>
-          <span className="text-xs text-foreground/90">Files</span>
-        </button>
+          icon={<Folder className="h-6 w-6" />}
+        />
+
+        <DesktopShortcutButton
+          label="README.md"
+          ariaLabel="Open desktop README"
+          onClick={() => {
+            openTextReader({
+              fileName: DESKTOP_README_FILE_NAME,
+              content: DESKTOP_README_CONTENT,
+            });
+            bringToFront("text");
+          }}
+          icon={<FileText className="h-6 w-6" />}
+        />
+
+        {PROJECT_WEB_SHORTCUTS.map((shortcut) => (
+          <DesktopShortcutButton
+            key={shortcut.id}
+            label={shortcut.host}
+            ariaLabel={`Open ${shortcut.host}`}
+            onClick={() => openExternalUrl(shortcut.href)}
+            icon={
+              <Image
+                src={getShortcutIconSrc(shortcut, isDark)}
+                alt={`${shortcut.name} logo`}
+                width={48}
+                height={48}
+                className="h-8 w-8 rounded-[4px] object-contain"
+              />
+            }
+          />
+        ))}
       </div>
 
       {/* Dock pinned to bottom */}
@@ -214,7 +301,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("files")}
           >
-            <Window
+            <AppWindow
               title="Files"
               onClose={closeFiles}
               onMinimize={closeFiles}
@@ -241,7 +328,7 @@ export function Desktop({ className, name }: DesktopProps) {
                   }
                 }}
               />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}
@@ -255,7 +342,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("calc")}
           >
-            <Window
+            <AppWindow
               title="Calculator"
               onClose={closeCalc}
               onMinimize={closeCalc}
@@ -267,7 +354,7 @@ export function Desktop({ className, name }: DesktopProps) {
               resizable={false}
             >
               <CalculatorApp />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}
@@ -281,7 +368,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("notes")}
           >
-            <Window
+            <AppWindow
               title="Notes"
               onClose={closeNotes}
               onMinimize={closeNotes}
@@ -290,7 +377,7 @@ export function Desktop({ className, name }: DesktopProps) {
               initialHeight={560}
             >
               <NotesApp />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}
@@ -304,7 +391,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("text")}
           >
-            <Window
+            <AppWindow
               title={textReader.fileName ?? "Text Reader"}
               onClose={closeTextReader}
               onMinimize={closeTextReader}
@@ -316,7 +403,7 @@ export function Desktop({ className, name }: DesktopProps) {
                 fileName={textReader.fileName ?? "Untitled.txt"}
                 content={textReader.content ?? ""}
               />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}
@@ -330,7 +417,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("image")}
           >
-            <Window
+            <AppWindow
               title={imageViewer.fileName ?? "Image Viewer"}
               onClose={closeImageViewer}
               onMinimize={closeImageViewer}
@@ -342,7 +429,7 @@ export function Desktop({ className, name }: DesktopProps) {
                 fileName={imageViewer.fileName ?? "image"}
                 src={imageViewer.src ?? ""}
               />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}
@@ -356,7 +443,7 @@ export function Desktop({ className, name }: DesktopProps) {
             className="pointer-events-auto"
             onPointerDown={() => bringToFront("snake")}
           >
-            <Window
+            <AppWindow
               title="Snake"
               onClose={closeSnake}
               onMinimize={closeSnake}
@@ -365,7 +452,7 @@ export function Desktop({ className, name }: DesktopProps) {
               initialHeight={640}
             >
               <SnakeApp />
-            </Window>
+            </AppWindow>
           </div>
         </div>
       )}

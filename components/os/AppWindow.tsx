@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion, useDragControls, useMotionValue } from "framer-motion";
 import { useId, useRef, useState } from "react";
 
-interface WindowProps {
+interface AppWindowProps {
   title: string;
   children: React.ReactNode;
   className?: string;
@@ -23,7 +23,7 @@ interface WindowProps {
   resizable?: boolean;
 }
 
-export function Window({
+export function AppWindow({
   title,
   children,
   className,
@@ -37,7 +37,7 @@ export function Window({
   minWidth = 640,
   minHeight = 420,
   resizable = true,
-}: WindowProps) {
+}: AppWindowProps) {
   const controls = useDragControls();
   const labelId = useId();
   const [size, setSize] = useState({
@@ -138,7 +138,7 @@ export function Window({
             className="h-2.5 w-2.5 rounded-full bg-yellow-500"
           />
           <button
-            aria-label="Toggle Fullscreen"
+            aria-label="Toggle maximize"
             onClick={() => {
               // Reset any drag offsets so maximized window anchors to viewport
               x.set(0);

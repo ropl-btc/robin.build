@@ -2,6 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { TreeNode, TreeView } from "@/components/ui/tree-view";
+import Image from "next/image";
+import {
+  DESKTOP_README_CONTENT,
+  DESKTOP_README_FILE_NAME,
+  getShortcutIconSrc,
+  PROJECT_WEB_SHORTCUTS,
+} from "@/lib/desktop-shortcuts";
 import {
   Folder,
   FileText,
@@ -15,7 +22,7 @@ import {
   StickyNote,
   Gamepad2,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface FilesAppProps {
   className?: string;
@@ -89,7 +96,31 @@ const VFS_DATE = {
   OLDER: "Sep 10, 2025",
 } as const;
 
-const makeVfsRoot = (): Record<string, FileEntry> => {
+/** Renders a compact website logo icon for link entries in the Files table. */
+const makeShortcutIcon = (src: string, alt: string): React.ReactNode => (
+  <Image
+    src={src}
+    alt={alt}
+    width={16}
+    height={16}
+    className="h-4 w-4 rounded-[3px] bg-zinc-900 object-contain p-[1px]"
+  />
+);
+
+const makeVfsRoot = (isDarkTheme: boolean): Record<string, FileEntry> => {
+  const projectWebShortcuts: FileEntry[] = PROJECT_WEB_SHORTCUTS.map(
+    (shortcut) => ({
+      name: shortcut.host,
+      type: "link",
+      icon: makeShortcutIcon(
+        getShortcutIconSrc(shortcut, isDarkTheme),
+        `${shortcut.name} logo`,
+      ),
+      modified: VFS_DATE.RECENT,
+      href: shortcut.href,
+    }),
+  );
+
   const desktop: FileEntry = {
     name: "Desktop",
     type: "folder",
@@ -102,6 +133,14 @@ const makeVfsRoot = (): Record<string, FileEntry> => {
         icon: <AppWindow className="h-4 w-4" />,
         modified: VFS_DATE.MID,
       },
+      {
+        name: DESKTOP_README_FILE_NAME,
+        type: "text",
+        icon: <FileText className="h-4 w-4" />,
+        modified: VFS_DATE.RECENT,
+        content: DESKTOP_README_CONTENT,
+      },
+      ...projectWebShortcuts,
     ],
   };
 
@@ -250,6 +289,7 @@ const makeVfsRoot = (): Record<string, FileEntry> => {
           modified: VFS_DATE.MID,
           appId: "snake",
         },
+        ...projectWebShortcuts,
       ],
     },
     documents,
@@ -264,7 +304,7 @@ const makeVfsRoot = (): Record<string, FileEntry> => {
     code,
     "robin-build": robinBuildFolder,
     liquidium: images.children?.find(
-      (c) => c.name === "liquidium"
+      (c) => c.name === "liquidium",
     ) as FileEntry,
   } as const;
 };
@@ -275,7 +315,20 @@ export function FilesApp({
   onOpenImage,
   onOpenApp,
 }: FilesAppProps) {
-  const vfs = useMemo(() => makeVfsRoot(), []);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const syncTheme = () => {
+      setIsDarkTheme(root.classList.contains("dark"));
+    };
+
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const vfs = useMemo(() => makeVfsRoot(isDarkTheme), [isDarkTheme]);
   const [currentFolderId, setCurrentFolderId] = useState<string>("desktop");
 
   const currentFolder: FileEntry | null = useMemo(() => {
@@ -294,7 +347,7 @@ export function FilesApp({
         setCurrentFolderId(targetId);
       }
     },
-    [vfs]
+    [vfs],
   );
 
   const handleOpen = useCallback(
@@ -302,7 +355,7 @@ export function FilesApp({
       if (entry.type === "folder") {
         // Find by name match among vfs keys for known folders
         const byName = Object.entries(vfs).find(
-          ([, v]) => v.name === entry.name
+          ([, v]) => v.name === entry.name,
         );
         if (byName) setCurrentFolderId(byName[0]);
         return;
@@ -327,7 +380,7 @@ export function FilesApp({
         return;
       }
     },
-    [onOpenText, onOpenImage, onOpenApp, vfs]
+    [onOpenText, onOpenImage, onOpenApp, vfs],
   );
 
   const toolbarTitle = currentFolder?.name ?? "Recents";

@@ -1,20 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { SlidingNumber } from "@/components/ui/sliding-number";
 import { Calendar } from "@/components/ui/calendar";
-import { Power } from "lucide-react";
+import { Maximize2, Minimize2, Power } from "lucide-react";
 
-export default function StatusClock() {
+export default function StatusBar() {
   const [now, setNow] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [clockOpen, setClockOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  /** Returns the current fullscreen element across standard and WebKit APIs. */
+  const getFullscreenElement = useCallback((): Element | null => {
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element | null;
+    };
+    return doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(getFullscreenElement()));
+    };
+
+    onFullscreenChange();
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        onFullscreenChange,
+      );
+    };
+  }, [getFullscreenElement]);
+
+  /** Toggles true browser fullscreen for an immersive desktop experience. */
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (getFullscreenElement()) {
+        const doc = document as Document & {
+          webkitExitFullscreen?: () => Promise<void> | void;
+        };
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+          return;
+        }
+        if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
+        return;
+      }
+
+      const root = document.documentElement as HTMLElement & {
+        webkitRequestFullscreen?: () => Promise<void> | void;
+      };
+      if (root.requestFullscreen) {
+        await root.requestFullscreen();
+        return;
+      }
+      if (root.webkitRequestFullscreen) {
+        await root.webkitRequestFullscreen();
+      }
+    } catch {
+      // Ignore: fullscreen can fail when browser policies block it.
+    }
+  }, [getFullscreenElement]);
 
   const hours24 = now.getHours();
   const hours12 = ((hours24 + 11) % 12) + 1; // 1-12
@@ -75,6 +133,18 @@ export default function StatusClock() {
         </button>
       </Badge>
       {/* Power button: hard navigate to landing to reset state */}
+      <button
+        type="button"
+        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        onClick={toggleFullscreen}
+        className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10"
+      >
+        {isFullscreen ? (
+          <Minimize2 className="h-4 w-4" />
+        ) : (
+          <Maximize2 className="h-4 w-4" />
+        )}
+      </button>
       <button
         type="button"
         aria-label="Go to home"

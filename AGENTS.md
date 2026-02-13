@@ -5,7 +5,7 @@ This project is a small “web OS” built with Next.js 15 + TypeScript, styled 
 ## Project Structure & Modules
 
 - `app/` — App Router; global styles in `app/globals.css`; terminal → Desktop flow in `app/page.tsx`.
-- `components/os/` — Desktop, `Window` (drag/resize), Dock, `StatusClock`, app windows (Files, Calculator, Notes).
+- `components/os/` — Desktop, `AppWindow` (drag/resize), Dock, `StatusBar`, app windows (Files, Calculator, Notes).
 - `components/magicui/` — Magic UI widgets (`morphing-text`, terminal).
 - `components/ui/` — Primitives (`badge`, `button`, `calendar`, `sliding-number`, `noise`).
 - `lib/utils.ts` — `cn` helper. Path alias `@/*` maps to repo root.
@@ -22,7 +22,7 @@ This project is a small “web OS” built with Next.js 15 + TypeScript, styled 
 
 - Boot sequence: terminal runs and prompts for name; then Desktop mounts. Background noise + `MorphingText` show a time‑aware greeting (“good morning/evening {name}”).
 - Windows: draggable/resizable; last interaction brings to front; Dock clicks also refocus existing windows.
-- Clock: animated HH:MM:SS via `SlidingNumber`; clicking the date opens a view‑only `Calendar`.
+- Status bar: animated HH:MM:SS via `SlidingNumber`; clicking the date opens a view‑only `Calendar`, with fullscreen and power controls.
 
 ## Style & Conventions
 
