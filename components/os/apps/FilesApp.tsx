@@ -110,7 +110,7 @@ const makeShortcutIcon = (src: string, alt: string): React.ReactNode => (
 const makeVfsRoot = (isDarkTheme: boolean): Record<string, FileEntry> => {
   const projectWebShortcuts: FileEntry[] = PROJECT_WEB_SHORTCUTS.map(
     (shortcut) => ({
-      name: shortcut.host,
+      name: shortcut.name,
       type: "link",
       icon: makeShortcutIcon(
         getShortcutIconSrc(shortcut, isDarkTheme),

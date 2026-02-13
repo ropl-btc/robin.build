@@ -236,8 +236,8 @@ export function Desktop({ className, name }: DesktopProps) {
         {PROJECT_WEB_SHORTCUTS.map((shortcut) => (
           <DesktopShortcutButton
             key={shortcut.id}
-            label={shortcut.host}
-            ariaLabel={`Open ${shortcut.host}`}
+            label={shortcut.name}
+            ariaLabel={`Open ${shortcut.name}`}
             onClick={() => openExternalUrl(shortcut.href)}
             icon={
               <Image

@@ -10,8 +10,15 @@ export const PROJECT_WEB_SHORTCUTS = [
     iconSrc: "/images/project-icons/runesswap_logo.png",
   },
   {
+    id: "bitcoinpuppets-community",
+    name: "Bitcoin Puppets",
+    host: "bitcoinpuppets.community",
+    href: "https://bitcoinpuppets.community/",
+    iconSrc: "/images/project-icons/bitcoinpuppets_icon.png",
+  },
+  {
     id: "liquidium-fi",
-    name: "Liquidium FI",
+    name: "Liquidium Fi",
     host: "liquidium.fi",
     href: "https://liquidium.fi",
     iconSrc: "/images/project-icons/liquidium_fi_icon_light.svg",
@@ -75,6 +82,7 @@ Finder (Files App)
 
 Pinned Project Shortcuts
 - runesswap.app
+- bitcoinpuppets.community
 - liquidium.fi
 - liquidium.wtf
 - liquidium.org
