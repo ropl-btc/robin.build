@@ -1,5 +1,5 @@
-import React from "react";
 import { ArrowRight } from "lucide-react";
+import React from "react";
 import { cn } from "@/lib/utils";
 
 export const InteractiveHoverButton = React.forwardRef<
@@ -11,7 +11,7 @@ export const InteractiveHoverButton = React.forwardRef<
       ref={ref}
       className={cn(
         "group relative w-auto cursor-pointer overflow-hidden rounded-full border bg-background p-2 px-6 text-center font-semibold",
-        className
+        className,
       )}
       {...props}
     >

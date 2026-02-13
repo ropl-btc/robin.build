@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { SlidingNumber } from "@/components/ui/sliding-number";
-import { Calendar } from "@/components/ui/calendar";
 import { Maximize2, Minimize2, Power } from "lucide-react";
+import { type KeyboardEvent, useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { SlidingNumber } from "@/components/ui/sliding-number";
 
 export default function StatusBar() {
   const [now, setNow] = useState<Date>(new Date());
@@ -92,6 +92,23 @@ export default function StatusBar() {
     year: "numeric",
   }).format(now);
 
+  /**
+   * Closes popovers when activated with keyboard from overlay elements.
+   */
+  const handleDismissOverlayKey = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>, onClose: () => void) => {
+      if (
+        event.key === "Escape" ||
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+        event.preventDefault();
+        onClose();
+      }
+    },
+    [],
+  );
+
   return (
     <div className="pointer-events-none absolute right-3 top-2 z-10 flex items-center gap-2">
       <Badge
@@ -164,10 +181,20 @@ export default function StatusBar() {
         <div
           className="pointer-events-auto fixed inset-0 z-20"
           onClick={() => setCalendarOpen(false)}
+          onKeyDown={(event) =>
+            handleDismissOverlayKey(event, () => setCalendarOpen(false))
+          }
+          role="button"
+          tabIndex={0}
+          aria-label="Close calendar"
         >
           <div
             className="absolute right-2 top-10 rounded-xl border border-border bg-background p-2 shadow-xl"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
           >
             <Calendar
               mode="single"
@@ -185,10 +212,20 @@ export default function StatusBar() {
         <div
           className="pointer-events-auto fixed inset-0 z-20"
           onClick={() => setClockOpen(false)}
+          onKeyDown={(event) =>
+            handleDismissOverlayKey(event, () => setClockOpen(false))
+          }
+          role="button"
+          tabIndex={0}
+          aria-label="Close clock"
         >
           <div
             className="absolute right-2 top-10 w-[min(92vw,420px)] rounded-xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur md:p-4"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
           >
             <div className="flex items-end justify-center gap-1.5 text-5xl font-mono tabular-nums md:gap-2 md:text-6xl">
               <SlidingNumber value={hours12} padStart />

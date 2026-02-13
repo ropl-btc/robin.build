@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { ChevronRight, Folder, File, FolderOpen } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronRight, File, Folder, FolderOpen } from "lucide-react";
+import type React from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -47,7 +48,7 @@ export function TreeView({
   animateExpand = true,
 }: TreeViewProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    new Set(defaultExpandedIds)
+    new Set(defaultExpandedIds),
   );
   const [internalSelectedIds, setInternalSelectedIds] =
     useState<string[]>(selectedIds);
@@ -70,7 +71,7 @@ export function TreeView({
         return newSet;
       });
     },
-    [onNodeExpand]
+    [onNodeExpand],
   );
 
   const handleSelection = useCallback(
@@ -99,14 +100,14 @@ export function TreeView({
       currentSelectedIds,
       isControlled,
       onSelectionChange,
-    ]
+    ],
   );
 
   const renderNode = (
     node: TreeNode,
     level = 0,
     isLast = false,
-    parentPath: boolean[] = []
+    parentPath: boolean[] = [],
   ) => {
     const hasChildren = (node.children?.length ?? 0) > 0;
     const isExpanded = expandedIds.has(node.id);
@@ -131,7 +132,7 @@ export function TreeView({
             "flex items-center py-2 px-3 cursor-pointer transition-all duration-200 relative group rounded-md mx-1",
             "hover:bg-accent/50",
             isSelected && "bg-accent/80",
-            selectable && "hover:border-accent-foreground/10"
+            selectable && "hover:border-accent-foreground/10",
           )}
           style={{ paddingLeft: level * indent + 8 }}
           onClick={(e) => {
@@ -225,13 +226,13 @@ export function TreeView({
                   delay: animateExpand ? 0.1 : 0,
                 }}
               >
-                {node.children!.map((child, index) =>
+                {node.children?.map((child, index) =>
                   renderNode(
                     child,
                     level + 1,
-                    index === node.children!.length - 1,
-                    currentPath
-                  )
+                    index === (node.children?.length ?? 0) - 1,
+                    currentPath,
+                  ),
                 )}
               </motion.div>
             </motion.div>
@@ -245,7 +246,7 @@ export function TreeView({
     <motion.div
       className={cn(
         "w-full bg-background border border-border rounded-xl",
-        className
+        className,
       )}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -253,7 +254,7 @@ export function TreeView({
     >
       <div className="p-2">
         {data.map((node, index) =>
-          renderNode(node, 0, index === data.length - 1)
+          renderNode(node, 0, index === data.length - 1),
         )}
       </div>
     </motion.div>

@@ -1,28 +1,28 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { TreeNode, TreeView } from "@/components/ui/tree-view";
+import {
+  AppWindow,
+  Calculator as CalculatorIcon,
+  Clock,
+  Download,
+  FileText,
+  Folder,
+  Gamepad2,
+  Globe,
+  Home,
+  Image as ImageIcon,
+  StickyNote,
+} from "lucide-react";
 import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type TreeNode, TreeView } from "@/components/ui/tree-view";
 import {
   DESKTOP_README_CONTENT,
   DESKTOP_README_FILE_NAME,
   getShortcutIconSrc,
   PROJECT_WEB_SHORTCUTS,
 } from "@/lib/desktop-shortcuts";
-import {
-  Folder,
-  FileText,
-  Image as ImageIcon,
-  Home,
-  Download,
-  AppWindow,
-  Clock,
-  Globe,
-  Calculator as CalculatorIcon,
-  StickyNote,
-  Gamepad2,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface FilesAppProps {
   className?: string;
@@ -371,7 +371,7 @@ export function FilesApp({
         return;
       }
       if (entry.type === "image") {
-        const src = entry.src ?? `/` + entry.name;
+        const src = entry.src ?? `/${entry.name}`;
         onOpenImage?.({ fileName: entry.name, src });
         return;
       }

@@ -1,11 +1,11 @@
 "use client";
 
+import type { Block } from "@blocknote/core";
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/shadcn";
+import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
-import type { Block } from "@blocknote/core";
-import { BlockNoteView } from "@blocknote/shadcn";
-import { useCreateBlockNote } from "@blocknote/react";
 
 interface NotesAppProps {
   className?: string;
@@ -44,7 +44,7 @@ const titleFrom = (content: Block[]) => {
   if (typeof c === "string") text = c;
   else if (Array.isArray(c)) text = c.map((x) => x.text ?? "").join("");
   const t = (text || first.type || "Untitled").trim() || "Untitled";
-  return t.length > 40 ? t.slice(0, 40) + "…" : t;
+  return t.length > 40 ? `${t.slice(0, 40)}…` : t;
 };
 
 export default function NotesApp({ className }: NotesAppProps) {
@@ -126,6 +126,7 @@ export default function NotesApp({ className }: NotesAppProps) {
         <div className="flex items-center justify-between px-1 py-1">
           <div className="text-sm font-medium">Notes</div>
           <button
+            type="button"
             onClick={addNote}
             className="rounded-md border px-2 py-1 text-xs hover:bg-accent"
           >
@@ -149,6 +150,7 @@ export default function NotesApp({ className }: NotesAppProps) {
                   {titleFrom(n.content)}
                 </div>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteNote(n.id);

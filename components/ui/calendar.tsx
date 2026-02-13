@@ -1,11 +1,10 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 import { DayPicker } from "react-day-picker";
-
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -25,11 +24,11 @@ function Calendar({
     nav: "absolute top-0 flex w-full justify-between z-10",
     button_previous: cn(
       buttonVariants({ variant: "ghost" }),
-      "size-9 text-muted-foreground/80 hover:text-foreground p-0"
+      "size-9 text-muted-foreground/80 hover:text-foreground p-0",
     ),
     button_next: cn(
       buttonVariants({ variant: "ghost" }),
-      "size-9 text-muted-foreground/80 hover:text-foreground p-0"
+      "size-9 text-muted-foreground/80 hover:text-foreground p-0",
     ),
     weekday: "size-9 p-0 text-xs font-medium text-muted-foreground/80",
     day_button:
@@ -46,24 +45,18 @@ function Calendar({
     week_number: "size-9 p-0 text-xs font-medium text-muted-foreground/80",
   };
 
-  const mergedClassNames: typeof defaultClassNames = Object.keys(
-    defaultClassNames
-  ).reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: classNames?.[key as keyof typeof classNames]
-        ? cn(
-            defaultClassNames[key as keyof typeof defaultClassNames],
-            classNames[key as keyof typeof classNames]
-          )
-        : defaultClassNames[key as keyof typeof defaultClassNames],
-    }),
-    {} as typeof defaultClassNames
-  );
+  const mergedClassNames = { ...defaultClassNames };
+  for (const key of Object.keys(defaultClassNames) as Array<
+    keyof typeof defaultClassNames
+  >) {
+    const userClassName = classNames?.[key as keyof typeof classNames];
+    if (!userClassName) continue;
+    mergedClassNames[key] = cn(defaultClassNames[key], userClassName);
+  }
 
   const defaultComponents = {
     Chevron: (
-      props: React.SVGProps<SVGSVGElement> & { orientation?: string }
+      props: React.SVGProps<SVGSVGElement> & { orientation?: string },
     ) => {
       if (props.orientation === "left") {
         return (

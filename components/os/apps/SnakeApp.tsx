@@ -39,7 +39,7 @@ export default function SnakeApp({ className }: SnakeAppProps) {
       { x: 9, y: 10 },
       { x: 8, y: 10 },
       { x: 7, y: 10 },
-    ])
+    ]),
   );
   const [score, setScore] = useState(0);
   const [running, setRunning] = useState(true);
@@ -61,7 +61,7 @@ export default function SnakeApp({ className }: SnakeAppProps) {
         return next;
       });
     },
-    [dir]
+    [dir],
   );
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export default function SnakeApp({ className }: SnakeAppProps) {
         { x: 9, y: 10 },
         { x: 8, y: 10 },
         { x: 7, y: 10 },
-      ])
+      ]),
     );
     setScore(0);
     setSpeedMs(INITIAL_SPEED_MS);
@@ -202,6 +202,7 @@ export default function SnakeApp({ className }: SnakeAppProps) {
           <span>•</span>
           <span>Space: Pause</span>
           <button
+            type="button"
             className="ml-2 rounded-md border border-border/70 px-2 py-0.5 text-xs hover:bg-foreground/10"
             onClick={restart}
           >

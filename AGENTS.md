@@ -9,7 +9,7 @@ This project is a small “web OS” built with Next.js 15 + TypeScript, styled 
 - `components/magicui/` — Magic UI widgets (`morphing-text`, terminal).
 - `components/ui/` — Primitives (`badge`, `button`, `calendar`, `sliding-number`, `noise`).
 - `lib/utils.ts` — `cn` helper. Path alias `@/*` maps to repo root.
-- Config: `next.config.ts`, `open-next.config.ts`, `wrangler.jsonc`, `eslint.config.mjs`, `postcss.config.mjs`, `tsconfig.json`.
+- Config: `next.config.ts`, `open-next.config.ts`, `wrangler.jsonc`, `biome.json`, `postcss.config.mjs`, `tsconfig.json`.
 
 ## Dev, Build, Deploy
 
@@ -28,7 +28,7 @@ This project is a small “web OS” built with Next.js 15 + TypeScript, styled 
 
 - TypeScript (strict), 2‑space indent. Components PascalCase; hooks `useX.ts`; route folders kebab‑case.
 - Prefer server‑first; add "use client" only when needed. Keep Tailwind class lists readable; compose via `cn(...)`.
-- Format only touched files with Prettier 3.
+- Format only touched files with Biome.
 
 ## Testing
 
@@ -41,8 +41,8 @@ This project is a small “web OS” built with Next.js 15 + TypeScript, styled 
 
 ## Agent-Specific Notes
 
-- Make minimal diffs. Touch only what you change. Run ESLint and Prettier on edited files. Keep things KISS and DRY.
-- NEVER ignore es-lint; NEVER use the 'any' type and try to avoid 'unknown' type.
+- Make minimal diffs. Touch only what you change. Run Biome checks on edited files. Keep things KISS and DRY.
+- NEVER ignore lint issues; NEVER use the 'any' type and try to avoid 'unknown' type.
 - Do NOT use magic strings, use enums or constants instead if possible.
 
 ## UI

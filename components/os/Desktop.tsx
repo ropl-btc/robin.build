@@ -1,38 +1,38 @@
 "use client";
 
-import { Dock } from "@/components/ui/dock";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 import {
-  Folder,
   Calculator,
-  SunDim,
+  FileText,
+  Folder,
   Moon,
   StickyNote,
-  FileText,
+  SunDim,
 } from "lucide-react";
+import Image from "next/image";
 import {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
   type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
-import { FilesApp } from "@/components/os/apps/FilesApp";
-import CalculatorApp from "@/components/os/apps/CalculatorApp";
-import NotesApp from "@/components/os/apps/NotesApp";
-import { AppWindow } from "@/components/os/AppWindow";
-import StatusBar from "@/components/os/StatusBar";
 import { MorphingText } from "@/components/magicui/morphing-text";
-import TextReaderApp from "@/components/os/apps/TextReaderApp";
+import { AppWindow } from "@/components/os/AppWindow";
+import CalculatorApp from "@/components/os/apps/CalculatorApp";
+import { FilesApp } from "@/components/os/apps/FilesApp";
 import ImageViewerApp from "@/components/os/apps/ImageViewerApp";
+import NotesApp from "@/components/os/apps/NotesApp";
 import SnakeApp from "@/components/os/apps/SnakeApp";
+import TextReaderApp from "@/components/os/apps/TextReaderApp";
+import StatusBar from "@/components/os/StatusBar";
+import { Dock } from "@/components/ui/dock";
 import {
   DESKTOP_README_CONTENT,
   DESKTOP_README_FILE_NAME,
   getShortcutIconSrc,
   PROJECT_WEB_SHORTCUTS,
 } from "@/lib/desktop-shortcuts";
+import { cn } from "@/lib/utils";
 
 interface DesktopProps {
   className?: string;
@@ -55,6 +55,7 @@ function DesktopShortcutButton({
 }: DesktopShortcutButtonProps) {
   return (
     <button
+      type="button"
       className={cn(
         "group flex w-28 flex-col items-center gap-2 rounded-md p-2",
         "transition-colors hover:bg-foreground/5 focus:outline-none",
@@ -385,7 +386,7 @@ export function Desktop({ className, name }: DesktopProps) {
       {textReader.open && (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ zIndex: (zMap as Record<string, number>)["text"] ?? 20 }}
+          style={{ zIndex: (zMap as Record<string, number>).text ?? 20 }}
         >
           <div
             className="pointer-events-auto"
@@ -411,7 +412,7 @@ export function Desktop({ className, name }: DesktopProps) {
       {imageViewer.open && (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ zIndex: (zMap as Record<string, number>)["image"] ?? 20 }}
+          style={{ zIndex: (zMap as Record<string, number>).image ?? 20 }}
         >
           <div
             className="pointer-events-auto"
@@ -437,7 +438,7 @@ export function Desktop({ className, name }: DesktopProps) {
       {snakeOpen && (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ zIndex: (zMap as Record<string, number>)["snake"] ?? 20 }}
+          style={{ zIndex: (zMap as Record<string, number>).snake ?? 20 }}
         >
           <div
             className="pointer-events-auto"

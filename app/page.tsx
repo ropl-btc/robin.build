@@ -1,16 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { TypingHyperText } from "@/components/custom/typing-hyper-text";
+import { AnimatedThemeToggler } from "@/components/magicui/animated-theme-toggler";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import {
+  AnimatedSpan,
   Terminal,
   TypingAnimation,
-  AnimatedSpan,
+  useTerminalSequenceItem,
 } from "@/components/magicui/terminal";
 import { Desktop } from "@/components/os/Desktop";
-import { useEffect, useState } from "react";
-import { AnimatedThemeToggler } from "@/components/magicui/animated-theme-toggler";
-import { useTerminalSequenceItem } from "@/components/magicui/terminal";
 
 export default function Home() {
   const [showCta, setShowCta] = useState(false);

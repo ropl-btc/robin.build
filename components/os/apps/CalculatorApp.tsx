@@ -16,6 +16,7 @@ export function CalculatorApp({ className }: CalculatorAppProps) {
     opts?: { variant?: "op" | "util"; span?: number; onClick?: () => void },
   ) => (
     <button
+      type="button"
       key={label}
       onClick={opts?.onClick}
       className={cn(
@@ -101,7 +102,7 @@ function useCalculator() {
   }, []);
 
   const dot = useCallback(() => {
-    setDisplay((cur) => (cur.includes(".") ? cur : cur + "."));
+    setDisplay((cur) => (cur.includes(".") ? cur : `${cur}.`));
   }, []);
 
   const clear = useCallback(() => {
@@ -117,7 +118,7 @@ function useCalculator() {
 
   const toggleSign = useCallback(() => {
     setDisplay((cur) =>
-      cur.startsWith("-") ? cur.slice(1) : cur === "0" ? cur : "-" + cur,
+      cur.startsWith("-") ? cur.slice(1) : cur === "0" ? cur : `-${cur}`,
     );
   }, []);
 
@@ -177,7 +178,7 @@ function useCalculator() {
 }
 
 function format(n: number) {
-  if (!isFinite(n)) return "Error";
+  if (!Number.isFinite(n)) return "Error";
   const str = Math.round(n * 1e10) / 1e10; // avoid fp noise
   const s = String(str);
   return s.length > 14 ? Number(str).toExponential(6) : s;

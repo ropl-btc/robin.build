@@ -1,7 +1,7 @@
+import { motion, type Variants } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import * as React from "react";
-import { motion, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
 
 interface DockProps {
   className?: string;
@@ -44,7 +44,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
           "relative group rounded-lg",
           compact ? "p-2" : "p-3",
           "hover:bg-secondary transition-colors",
-          className
+          className,
         )}
       >
         <Icon
@@ -56,14 +56,14 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
             "px-2 py-1 rounded text-xs",
             "bg-popover text-popover-foreground",
             "opacity-0 group-hover:opacity-100",
-            "transition-opacity whitespace-nowrap pointer-events-none"
+            "transition-opacity whitespace-nowrap pointer-events-none",
           )}
         >
           {label}
         </span>
       </motion.button>
     );
-  }
+  },
 );
 DockIconButton.displayName = "DockIconButton";
 
@@ -77,13 +77,13 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
         className={cn(
           "w-full flex items-center justify-center p-2",
           outerH,
-          className
+          className,
         )}
       >
         <div
           className={cn(
             "w-full max-w-4xl rounded-2xl flex items-center justify-center relative",
-            innerH
+            innerH,
           )}
         >
           <motion.div
@@ -94,7 +94,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
               "flex items-center gap-1 p-2 rounded-2xl",
               "backdrop-blur-lg border shadow-lg",
               "bg-background/90 border-border",
-              "hover:shadow-xl transition-shadow duration-300"
+              "hover:shadow-xl transition-shadow duration-300",
             )}
           >
             {items.map((item) => (
@@ -104,7 +104,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 Dock.displayName = "Dock";
 

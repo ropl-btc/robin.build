@@ -1,8 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type CharacterSet = string[] | readonly string[];
 
@@ -28,7 +29,7 @@ interface TypingHyperTextProps {
 }
 
 const DEFAULT_CHARACTER_SET = Object.freeze(
-  "abcdefghijklmnopqrstuvwxyz<>|[]{}.,?/+-=_!@#$%^&*()".split("")
+  "abcdefghijklmnopqrstuvwxyz<>|[]{}.,?/+-=_!@#$%^&*()".split(""),
 ) as readonly string[];
 
 export function TypingHyperText({
@@ -69,7 +70,7 @@ export function TypingHyperText({
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();

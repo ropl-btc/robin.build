@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { motion, useDragControls, useMotionValue } from "framer-motion";
 import { useId, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface AppWindowProps {
   title: string;
@@ -128,16 +128,19 @@ export function AppWindow({
       >
         <div className="flex items-center gap-2 pr-2">
           <button
+            type="button"
             aria-label="Close"
             onClick={onClose}
             className="h-2.5 w-2.5 rounded-full bg-red-500"
           />
           <button
+            type="button"
             aria-label="Minimize"
             onClick={onMinimize}
             className="h-2.5 w-2.5 rounded-full bg-yellow-500"
           />
           <button
+            type="button"
             aria-label="Toggle maximize"
             onClick={() => {
               // Reset any drag offsets so maximized window anchors to viewport

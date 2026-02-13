@@ -19,7 +19,7 @@ export default function ImageViewerApp({
         {fileName}
       </div>
       <div className="flex-1 overflow-auto p-3 grid place-items-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* biome-ignore lint/performance/noImgElement: This viewer must render arbitrary image sources at their natural size. */}
         <img
           src={src}
           alt={fileName}

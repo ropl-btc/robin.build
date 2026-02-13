@@ -20,9 +20,9 @@
 
 /* Tighter left/right padding and no rounded card */
 .bn-container .bn-editor {
-  background-color: transparent !important;
-  border-radius: 0 !important;
-  padding-inline: 12px !important; /* default is 54px */
+  background-color: transparent;
+  border-radius: 0;
+  padding-inline: 12px; /* default is 54px */
 }
 
 /* Slightly smaller base text size */
@@ -32,7 +32,7 @@
 
 /* Stronger contrast for body text in light mode, per BlockNote theming */
 .bn-container[data-color-scheme="light"] .bn-editor {
-  color: #000 !important;
+  color: #000;
 }
 
 /* Revert H1 sizing override – use BlockNote defaults */

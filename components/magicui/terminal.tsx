@@ -1,7 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { motion, MotionProps, useInView } from "motion/react";
+import { type MotionProps, motion, useInView } from "motion/react";
 import {
   Children,
   createContext,
@@ -11,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { cn } from "@/lib/utils";
 
 interface SequenceContextValue {
   completeItem: (index: number) => void;
@@ -111,7 +111,7 @@ export const TypingAnimation = ({
       motion.create(Component, {
         forwardMotionProps: true,
       }),
-    [Component]
+    [Component],
   );
 
   const [displayedText, setDisplayedText] = useState<string>("");
@@ -228,7 +228,7 @@ export const Terminal = ({
     return {
       completeItem: (index: number) => {
         setActiveIndex((current) =>
-          index === current ? current + 1 : current
+          index === current ? current + 1 : current,
         );
       },
       activeIndex,
@@ -251,7 +251,7 @@ export const Terminal = ({
       ref={containerRef}
       className={cn(
         "z-0 h-full max-h-[400px] w-full max-w-lg rounded-xl border border-border bg-background",
-        className
+        className,
       )}
     >
       <div className="flex flex-col gap-y-2 border-b border-border p-4">
