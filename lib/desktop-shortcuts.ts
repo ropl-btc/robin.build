@@ -14,7 +14,9 @@ export const PROJECT_WEB_SHORTCUTS = [
     name: "Bitcoin Puppets",
     host: "bitcoinpuppets.community",
     href: "https://bitcoinpuppets.community/",
-    iconSrc: "/images/project-icons/bitcoinpuppets_icon.png",
+    iconSrc: "/images/project-icons/bitcoinpuppets_icon_light.png",
+    iconSrcLight: "/images/project-icons/bitcoinpuppets_icon_light.png",
+    iconSrcDark: "/images/project-icons/bitcoinpuppets_icon_dark.png",
   },
   {
     id: "liquidium-fi",
