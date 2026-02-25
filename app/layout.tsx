@@ -1,3 +1,4 @@
+import { Agentation } from "agentation";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
@@ -42,6 +43,7 @@ export default function RootLayout({
         </Script>
         <NoiseBackground />
         <div className="relative z-10">{children}</div>
+        {process.env.NODE_ENV === "development" && <Agentation />}
       </body>
     </html>
   );

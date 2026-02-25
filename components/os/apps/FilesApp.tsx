@@ -4,6 +4,7 @@ import {
   AppWindow,
   Calculator as CalculatorIcon,
   Clock,
+  Compass,
   Download,
   FileText,
   Folder,
@@ -28,8 +29,9 @@ interface FilesAppProps {
   className?: string;
   onOpenText?: (payload: { fileName: string; content: string }) => void;
   onOpenImage?: (payload: { fileName: string; src: string }) => void;
+  onOpenLink?: (payload: { href: string }) => void;
   onOpenApp?: (payload: {
-    appId: "calculator" | "notes" | "files" | "snake";
+    appId: "browser" | "calculator" | "notes" | "files" | "snake";
   }) => void;
 }
 
@@ -87,7 +89,7 @@ type FileEntry = {
   content?: string;
   href?: string;
   src?: string;
-  appId?: "calculator" | "notes" | "files" | "snake";
+  appId?: "browser" | "calculator" | "notes" | "files" | "snake";
 };
 
 const VFS_DATE = {
@@ -132,6 +134,7 @@ const makeVfsRoot = (isDarkTheme: boolean): Record<string, FileEntry> => {
         type: "app",
         icon: <AppWindow className="h-4 w-4" />,
         modified: VFS_DATE.MID,
+        appId: "files",
       },
       {
         name: DESKTOP_README_FILE_NAME,
@@ -269,6 +272,13 @@ const makeVfsRoot = (isDarkTheme: boolean): Record<string, FileEntry> => {
       modified: VFS_DATE.OLDER,
       children: [
         {
+          name: "Browser",
+          type: "app",
+          icon: <Compass className="h-4 w-4" />,
+          modified: VFS_DATE.MID,
+          appId: "browser",
+        },
+        {
           name: "Calculator",
           type: "app",
           icon: <CalculatorIcon className="h-4 w-4" />,
@@ -313,6 +323,7 @@ export function FilesApp({
   className,
   onOpenText,
   onOpenImage,
+  onOpenLink,
   onOpenApp,
 }: FilesAppProps) {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -361,6 +372,8 @@ export function FilesApp({
         return;
       }
       if (entry.type === "link" && entry.href) {
+        onOpenLink?.({ href: entry.href });
+        if (onOpenLink) return;
         try {
           window.open(entry.href, "_blank", "noopener,noreferrer");
         } catch {}
@@ -380,15 +393,15 @@ export function FilesApp({
         return;
       }
     },
-    [onOpenText, onOpenImage, onOpenApp, vfs],
+    [onOpenText, onOpenImage, onOpenLink, onOpenApp, vfs],
   );
 
   const toolbarTitle = currentFolder?.name ?? "Recents";
 
   return (
-    <div className={cn("flex min-h-0 flex-1", className)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col md:flex-row", className)}>
       {/* Sidebar */}
-      <div className="w-60 shrink-0 border-r border-border/80 p-2">
+      <div className="w-full max-h-44 shrink-0 overflow-auto border-b border-border/80 p-2 md:max-h-none md:w-60 md:border-b-0 md:border-r">
         <TreeView
           data={sidebarData}
           className="bg-transparent border-0"
@@ -401,15 +414,43 @@ export function FilesApp({
       {/* Content */}
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b border-border/80 px-6 py-3">
-          <div className="text-sm font-medium">{toolbarTitle}</div>
-          <div className="text-xs text-muted-foreground">
-            Double-click to open
+        <div className="flex items-center justify-between border-b border-border/80 px-3 py-2 md:px-6 md:py-3">
+          <div className="text-xs font-medium md:text-sm">{toolbarTitle}</div>
+          <div className="text-[11px] text-muted-foreground md:text-xs">
+            <span className="md:hidden">Tap to open</span>
+            <span className="hidden md:inline">Double-click to open</span>
           </div>
         </div>
-        {/* List */}
-        <div className="flex-1 overflow-auto p-3">
-          <table className="w-full text-sm border-separate border-spacing-y-2">
+
+        {/* Mobile list */}
+        <div className="flex-1 overflow-auto p-2 md:hidden">
+          <div className="space-y-1">
+            {items.map((entry) => (
+              <button
+                key={entry.name}
+                type="button"
+                onClick={() => handleOpen(entry)}
+                className="flex w-full items-center gap-2 rounded-md border border-border/70 px-2 py-2 text-left transition-colors hover:bg-accent/40"
+              >
+                <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground">
+                  {entry.icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-medium">
+                    {entry.name}
+                  </span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {entry.type} • {entry.modified}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden flex-1 overflow-auto p-3 md:block">
+          <table className="w-full border-separate border-spacing-y-2 text-sm">
             <thead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <tr className="text-muted-foreground">
                 <th className="py-2 pr-2 pl-3 text-left font-normal">Name</th>

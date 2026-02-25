@@ -30,6 +30,20 @@
   font-size: 14px; /* was 16px */
 }
 
+@media (max-width: 767px) {
+  .bn-container {
+    font-size: 0.84rem;
+  }
+
+  .bn-container .bn-editor {
+    padding-inline: 8px;
+  }
+
+  .bn-default-styles {
+    font-size: 13px;
+  }
+}
+
 /* Stronger contrast for body text in light mode, per BlockNote theming */
 .bn-container[data-color-scheme="light"] .bn-editor {
   color: #000;

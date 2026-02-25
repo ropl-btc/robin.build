@@ -120,15 +120,15 @@ export default function NotesApp({ className }: NotesAppProps) {
   // titleFrom moved to top-level util
 
   return (
-    <div className={cn("flex h-full min-h-0", className)}>
+    <div className={cn("flex h-full min-h-0 flex-col md:flex-row", className)}>
       {/* Sidebar: notes list */}
-      <div className="w-64 shrink-0 border-r border-border/80 p-2 flex flex-col gap-2">
+      <div className="flex w-full max-h-52 shrink-0 flex-col gap-2 overflow-auto border-b border-border/80 p-2 md:max-h-none md:w-64 md:border-r md:border-b-0">
         <div className="flex items-center justify-between px-1 py-1">
-          <div className="text-sm font-medium">Notes</div>
+          <div className="text-xs font-medium md:text-sm">Notes</div>
           <button
             type="button"
             onClick={addNote}
-            className="rounded-md border px-2 py-1 text-xs hover:bg-accent"
+            className="rounded-md border px-2 py-1 text-xs hover:bg-accent md:text-xs"
           >
             New
           </button>
@@ -139,7 +139,7 @@ export default function NotesApp({ className }: NotesAppProps) {
               key={n.id}
               onClick={() => setActiveId(n.id)}
               className={cn(
-                "group cursor-pointer rounded-md p-2 text-sm border mb-2",
+                "group mb-2 cursor-pointer rounded-md border p-2 text-xs md:text-sm",
                 n.id === activeId
                   ? "bg-accent border-accent-foreground/20"
                   : "hover:bg-accent/40 border-transparent",
@@ -155,12 +155,12 @@ export default function NotesApp({ className }: NotesAppProps) {
                     e.stopPropagation();
                     deleteNote(n.id);
                   }}
-                  className="text-muted-foreground hover:text-foreground p-1"
+                  className="p-1.5 text-muted-foreground hover:text-foreground md:p-1"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-              <div className="text-xs text-muted-foreground mt-1 truncate">
+              <div className="mt-1 truncate text-[11px] text-muted-foreground md:text-xs">
                 {new Date(n.updatedAt).toLocaleString()}
               </div>
             </div>
@@ -170,7 +170,7 @@ export default function NotesApp({ className }: NotesAppProps) {
 
       {/* Editor column */}
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="relative flex-1 overflow-auto p-2">
+        <div className="relative flex-1 overflow-auto p-1.5 md:p-2">
           <BlockNoteEditorPane
             noteId={activeNote?.id ?? null}
             value={

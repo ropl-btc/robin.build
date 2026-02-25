@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useDragControls, useMotionValue } from "framer-motion";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface AppWindowProps {
@@ -23,6 +23,29 @@ interface AppWindowProps {
   resizable?: boolean;
 }
 
+const MOBILE_BREAKPOINT_QUERY = "(max-width: 767px)";
+const MOBILE_WINDOW_GUTTER_PX = 24;
+const MOBILE_WINDOW_RESERVED_HEIGHT_PX = 132;
+const MOBILE_WINDOW_TOP_PX = 48;
+const DESKTOP_DRAG_THRESHOLD_PX = 2;
+const MOBILE_DRAG_THRESHOLD_PX = 8;
+
+/** Tracks whether the viewport matches the mobile breakpoint. */
+function useIsMobileViewport(): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(MOBILE_BREAKPOINT_QUERY);
+    const sync = () => setIsMobile(media.matches);
+    sync();
+
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return isMobile;
+}
+
 export function AppWindow({
   title,
   children,
@@ -40,6 +63,7 @@ export function AppWindow({
 }: AppWindowProps) {
   const controls = useDragControls();
   const labelId = useId();
+  const isMobile = useIsMobileViewport();
   const [size, setSize] = useState({
     width: initialWidth,
     height: initialHeight,
@@ -59,7 +83,7 @@ export function AppWindow({
     edge: "right" | "bottom" | "corner",
     e: React.PointerEvent,
   ) => {
-    if (maximized) return;
+    if (maximized || isMobile) return;
     e.preventDefault();
     resizingRef.current = {
       startX: e.clientX,
@@ -91,6 +115,33 @@ export function AppWindow({
     window.addEventListener("pointerup", onUp, { once: true });
   };
 
+  useEffect(() => {
+    if (!isMobile) return;
+    x.set(0);
+    y.set(0);
+  }, [isMobile, x, y]);
+
+  const canDrag = !maximized;
+  const mobileWindowWidth = `min(${size.width}px, calc(100vw - ${MOBILE_WINDOW_GUTTER_PX}px))`;
+  const mobileWindowHeight = `min(${size.height}px, calc(100dvh - ${MOBILE_WINDOW_RESERVED_HEIGHT_PX}px))`;
+
+  /**
+   * Starts dragging from titlebar while ignoring window controls.
+   */
+  const startDragFromTitlebar = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!canDrag) return;
+    if (event.button !== 0) return;
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("[data-window-control='true']")) return;
+
+    controls.start(event, {
+      distanceThreshold: isMobile
+        ? MOBILE_DRAG_THRESHOLD_PX
+        : DESKTOP_DRAG_THRESHOLD_PX,
+    });
+  };
+
   return (
     <motion.div
       role="dialog"
@@ -108,9 +159,17 @@ export function AppWindow({
       style={
         maximized
           ? { x, y }
-          : { top, width: size.width, height: size.height, x, y }
+          : isMobile
+            ? {
+                top: MOBILE_WINDOW_TOP_PX,
+                width: mobileWindowWidth,
+                height: mobileWindowHeight,
+                x,
+                y,
+              }
+            : { top, width: size.width, height: size.height, x, y }
       }
-      drag={!maximized}
+      drag={canDrag}
       dragListener={false}
       dragControls={controls}
       dragMomentum={false}
@@ -120,27 +179,55 @@ export function AppWindow({
       {/* Titlebar / Drag handle */}
       <div
         className={cn(
-          "relative flex items-center gap-2 border-b border-border px-4",
-          "h-10 select-none",
-          maximized ? "cursor-default" : "cursor-move",
+          "relative flex items-center gap-2 border-b border-border select-none touch-none",
+          isMobile ? "h-11 px-2.5" : "h-10 px-4",
+          canDrag ? "cursor-move" : "cursor-default",
         )}
-        onPointerDown={(e) => (!maximized ? controls.start(e) : undefined)}
+        onPointerDown={startDragFromTitlebar}
       >
-        <div className="flex items-center gap-2 pr-2">
+        <div
+          className={cn(
+            "flex items-center pr-2",
+            isMobile ? "gap-0 pr-1.5" : "gap-2",
+          )}
+        >
           <button
             type="button"
+            data-window-control="true"
             aria-label="Close"
             onClick={onClose}
-            className="h-2.5 w-2.5 rounded-full bg-red-500"
-          />
+            className={cn(
+              "grid place-items-center rounded-full transition-transform hover:scale-105",
+              isMobile ? "h-9 w-8" : "h-4 w-4",
+            )}
+          >
+            <span
+              className={cn(
+                "rounded-full bg-red-500",
+                isMobile ? "h-3.5 w-3.5" : "h-2.5 w-2.5",
+              )}
+            />
+          </button>
           <button
             type="button"
+            data-window-control="true"
             aria-label="Minimize"
             onClick={onMinimize}
-            className="h-2.5 w-2.5 rounded-full bg-yellow-500"
-          />
+            className={cn(
+              "grid place-items-center rounded-full transition-transform hover:scale-105",
+              isMobile ? "h-9 w-8" : "h-4 w-4",
+            )}
+          >
+            <span
+              className={cn(
+                "rounded-full bg-yellow-500",
+                isMobile ? "h-3.5 w-3.5" : "h-2.5 w-2.5",
+              )}
+            />
+          </button>
           <button
             type="button"
+            data-window-control="true"
             aria-label="Toggle maximize"
             onClick={() => {
               // Reset any drag offsets so maximized window anchors to viewport
@@ -148,12 +235,25 @@ export function AppWindow({
               y.set(0);
               setMaximized((v) => !v);
             }}
-            className="h-2.5 w-2.5 rounded-full bg-green-500"
-          />
+            className={cn(
+              "grid place-items-center rounded-full transition-transform hover:scale-105",
+              isMobile ? "h-9 w-8" : "h-4 w-4",
+            )}
+          >
+            <span
+              className={cn(
+                "rounded-full bg-green-500",
+                isMobile ? "h-3.5 w-3.5" : "h-2.5 w-2.5",
+              )}
+            />
+          </button>
         </div>
         <div
           id={labelId}
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-medium text-center"
+          className={cn(
+            "pointer-events-none absolute left-1/2 top-1/2 max-w-[60%] -translate-x-1/2 -translate-y-1/2 truncate text-center font-medium",
+            isMobile ? "text-xs" : "text-sm",
+          )}
         >
           {title}
         </div>
@@ -171,7 +271,7 @@ export function AppWindow({
       </div>
 
       {/* Resize handles (disabled when maximized or not resizable) */}
-      {!maximized && resizable && (
+      {!maximized && resizable && !isMobile && (
         <>
           <div
             className="absolute right-0 top-10 bottom-0 w-2 cursor-ew-resize touch-none select-none"

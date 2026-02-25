@@ -110,14 +110,15 @@ export default function StatusBar() {
   );
 
   return (
-    <div className="pointer-events-none absolute right-3 top-2 z-10 flex items-center gap-2">
+    <div className="pointer-events-none absolute right-2 top-2 z-10 flex items-center gap-1.5 sm:right-3 sm:gap-2">
       <Badge
         asChild
         variant="secondary"
-        className="font-mono tracking-tight pointer-events-auto cursor-pointer select-none"
+        className="pointer-events-auto h-10 cursor-pointer select-none px-2 font-mono text-xs tracking-tight sm:h-auto sm:px-2"
       >
         <button
           type="button"
+          className="inline-flex min-h-10 items-center sm:min-h-0"
           onClick={() => {
             setCalendarOpen((v) => !v);
             setClockOpen(false);
@@ -129,10 +130,11 @@ export default function StatusBar() {
       <Badge
         asChild
         variant="secondary"
-        className="font-mono tracking-tight pointer-events-auto cursor-pointer select-none"
+        className="pointer-events-auto h-10 cursor-pointer select-none px-2 font-mono text-xs tracking-tight sm:h-auto sm:px-2"
       >
         <button
           type="button"
+          className="inline-flex min-h-10 items-center sm:min-h-0"
           aria-label="Open clock"
           onClick={() => {
             setClockOpen((v) => !v);
@@ -154,12 +156,12 @@ export default function StatusBar() {
         type="button"
         aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         onClick={toggleFullscreen}
-        className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10"
+        className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10 sm:h-7 sm:w-7"
       >
         {isFullscreen ? (
-          <Minimize2 className="h-4 w-4" />
+          <Minimize2 className="h-5 w-5 sm:h-4 sm:w-4" />
         ) : (
-          <Maximize2 className="h-4 w-4" />
+          <Maximize2 className="h-5 w-5 sm:h-4 sm:w-4" />
         )}
       </button>
       <button
@@ -173,9 +175,9 @@ export default function StatusBar() {
             window.location.href = "/";
           }
         }}
-        className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10"
+        className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background/70 text-foreground shadow-sm transition-colors hover:bg-foreground/10 sm:h-7 sm:w-7"
       >
-        <Power className="h-4 w-4" />
+        <Power className="h-5 w-5 sm:h-4 sm:w-4" />
       </button>
       {calendarOpen ? (
         <div

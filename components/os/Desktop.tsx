@@ -2,6 +2,7 @@
 
 import {
   Calculator,
+  Compass,
   FileText,
   Folder,
   Moon,
@@ -18,6 +19,7 @@ import {
 } from "react";
 import { MorphingText } from "@/components/magicui/morphing-text";
 import { AppWindow } from "@/components/os/AppWindow";
+import BrowserApp from "@/components/os/apps/BrowserApp";
 import CalculatorApp from "@/components/os/apps/CalculatorApp";
 import { FilesApp } from "@/components/os/apps/FilesApp";
 import ImageViewerApp from "@/components/os/apps/ImageViewerApp";
@@ -57,7 +59,7 @@ function DesktopShortcutButton({
     <button
       type="button"
       className={cn(
-        "group flex w-28 flex-col items-center gap-2 rounded-md p-2",
+        "group flex w-20 flex-col items-center gap-1.5 rounded-md p-1.5 sm:w-28 sm:gap-2 sm:p-2",
         "transition-colors hover:bg-foreground/5 focus:outline-none",
       )}
       aria-label={ariaLabel}
@@ -65,14 +67,14 @@ function DesktopShortcutButton({
     >
       <div
         className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-md",
+          "flex h-10 w-10 items-center justify-center rounded-md sm:h-12 sm:w-12",
           "bg-foreground/5 text-foreground transition-colors",
           "group-hover:bg-foreground/10",
         )}
       >
         {icon}
       </div>
-      <span className="text-center text-xs leading-4 text-foreground/90">
+      <span className="text-center text-[11px] leading-3.5 text-foreground/90 sm:text-xs sm:leading-4">
         {label}
       </span>
     </button>
@@ -102,6 +104,25 @@ export function Desktop({ className, name }: DesktopProps) {
       return next;
     });
   }, []);
+  const [browserState, setBrowserState] = useState<{
+    open: boolean;
+    url: string;
+  }>({ open: false, url: "https://robin.build" });
+  const openBrowser = useCallback(
+    (payload?: { url?: string }) => {
+      setBrowserState((previousState) => ({
+        open: true,
+        url: payload?.url ?? previousState.url,
+      }));
+      bringToFront("browser");
+    },
+    [bringToFront],
+  );
+  const closeBrowser = useCallback(
+    () =>
+      setBrowserState((previousState) => ({ ...previousState, open: false })),
+    [],
+  );
   const [textReader, setTextReader] = useState<{
     open: boolean;
     fileName?: string;
@@ -184,14 +205,13 @@ export function Desktop({ className, name }: DesktopProps) {
     if (snakeOpen) bringToFront("snake");
   }, [snakeOpen, bringToFront]);
 
-  /** Opens an external website in a new tab with a strict opener policy. */
-  const openExternalUrl = useCallback((href: string) => {
-    try {
-      window.open(href, "_blank", "noopener,noreferrer");
-    } catch {
-      window.location.assign(href);
-    }
-  }, []);
+  /** Opens a URL inside the in-OS browser window. */
+  const openInBrowser = useCallback(
+    (href: string) => {
+      openBrowser({ url: href });
+    },
+    [openBrowser],
+  );
 
   return (
     <div
@@ -209,7 +229,7 @@ export function Desktop({ className, name }: DesktopProps) {
       <StatusBar />
 
       {/* Desktop icons */}
-      <div className="absolute left-4 top-6 grid gap-4 sm:left-6">
+      <div className="absolute left-3 top-14 grid grid-cols-2 gap-2 sm:left-6 sm:top-6 sm:grid-cols-1 sm:gap-4">
         <DesktopShortcutButton
           label="Files"
           ariaLabel="Files"
@@ -238,7 +258,7 @@ export function Desktop({ className, name }: DesktopProps) {
             key={shortcut.id}
             label={shortcut.name}
             ariaLabel={`Open ${shortcut.name}`}
-            onClick={() => openExternalUrl(shortcut.href)}
+            onClick={() => openInBrowser(shortcut.href)}
             icon={
               <Image
                 src={getShortcutIconSrc(shortcut, isDark)}
@@ -258,6 +278,13 @@ export function Desktop({ className, name }: DesktopProps) {
           <Dock
             compact
             items={[
+              {
+                icon: Compass,
+                label: "Browser",
+                onClick: () => {
+                  openBrowser();
+                },
+              },
               {
                 icon: Folder,
                 label: "Files",
@@ -313,6 +340,7 @@ export function Desktop({ className, name }: DesktopProps) {
               <FilesApp
                 onOpenText={openTextReader}
                 onOpenImage={openImageViewer}
+                onOpenLink={({ href }) => openInBrowser(href)}
                 onOpenApp={({ appId }) => {
                   if (appId === "calculator") {
                     openCalc();
@@ -326,9 +354,36 @@ export function Desktop({ className, name }: DesktopProps) {
                   } else if (appId === "files") {
                     openFiles();
                     bringToFront("files");
+                  } else if (appId === "browser") {
+                    openBrowser();
                   }
                 }}
               />
+            </AppWindow>
+          </div>
+        </div>
+      )}
+
+      {browserState.open && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ zIndex: (zMap as Record<string, number>).browser ?? 20 }}
+        >
+          <div
+            className="pointer-events-auto"
+            onPointerDown={() => bringToFront("browser")}
+          >
+            <AppWindow
+              title="Browser"
+              onClose={closeBrowser}
+              onMinimize={closeBrowser}
+              dragConstraints={desktopRef}
+              initialWidth={1100}
+              initialHeight={680}
+              minWidth={460}
+              minHeight={360}
+            >
+              <BrowserApp initialUrl={browserState.url} />
             </AppWindow>
           </div>
         </div>

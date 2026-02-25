@@ -15,10 +15,10 @@ export default function ImageViewerApp({
 }: ImageViewerAppProps) {
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
-      <div className="border-b border-border/80 px-3 py-2 text-sm font-medium">
+      <div className="border-b border-border/80 px-2.5 py-1.5 text-xs font-medium md:px-3 md:py-2 md:text-sm">
         {fileName}
       </div>
-      <div className="flex-1 overflow-auto p-3 grid place-items-center">
+      <div className="grid flex-1 place-items-center overflow-auto p-2 md:p-3">
         {/* biome-ignore lint/performance/noImgElement: This viewer must render arbitrary image sources at their natural size. */}
         <img
           src={src}

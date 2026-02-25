@@ -48,7 +48,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
         )}
       >
         <Icon
-          className={cn("text-foreground", compact ? "w-5 h-5" : "w-5 h-5")}
+          className={cn("text-foreground", compact ? "h-5 w-5" : "h-5 w-5")}
         />
         <span
           className={cn(

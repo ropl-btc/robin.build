@@ -16,6 +16,7 @@ interface SequenceContextValue {
   completeItem: (index: number) => void;
   activeIndex: number;
   sequenceStarted: boolean;
+  skipSignal: number;
 }
 
 const SequenceContext = createContext<SequenceContextValue | null>(null);
@@ -24,6 +25,18 @@ const useSequence = () => useContext(SequenceContext);
 
 const ItemIndexContext = createContext<number | null>(null);
 const useItemIndex = () => useContext(ItemIndexContext);
+
+const ENTER_KEY = "Enter";
+const EDITABLE_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
+
+/**
+ * Returns true when a keyboard event target is an editable element.
+ */
+const isEditableTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  return EDITABLE_TAGS.has(target.tagName);
+};
 
 interface AnimatedSpanProps extends MotionProps {
   children: React.ReactNode;
@@ -48,6 +61,28 @@ export const AnimatedSpan = ({
   const sequence = useSequence();
   const itemIndex = useItemIndex();
   const [hasStarted, setHasStarted] = useState(false);
+  const skipSignalRef = useRef(sequence?.skipSignal ?? 0);
+
+  useEffect(() => {
+    if (!sequence) return;
+
+    const hasNewSkip = sequence.skipSignal > skipSignalRef.current;
+    skipSignalRef.current = sequence.skipSignal;
+    if (!hasNewSkip) return;
+    if (itemIndex === null) return;
+    if (!sequence.sequenceStarted) return;
+    if (sequence.activeIndex !== itemIndex) return;
+
+    setHasStarted(true);
+    sequence.completeItem(itemIndex);
+  }, [
+    itemIndex,
+    sequence,
+    sequence?.activeIndex,
+    sequence?.sequenceStarted,
+    sequence?.skipSignal,
+  ]);
+
   useEffect(() => {
     if (!sequence || itemIndex === null) return;
     if (!sequence.sequenceStarted) return;
@@ -124,6 +159,7 @@ export const TypingAnimation = ({
 
   const sequence = useSequence();
   const itemIndex = useItemIndex();
+  const skipSignalRef = useRef(sequence?.skipSignal ?? 0);
 
   useEffect(() => {
     if (sequence && itemIndex !== null) {
@@ -190,6 +226,28 @@ export const TypingAnimation = ({
     };
   }, [children, duration, started]);
 
+  useEffect(() => {
+    if (!sequence) return;
+
+    const hasNewSkip = sequence.skipSignal > skipSignalRef.current;
+    skipSignalRef.current = sequence.skipSignal;
+    if (!hasNewSkip) return;
+    if (itemIndex === null) return;
+    if (!sequence.sequenceStarted) return;
+    if (sequence.activeIndex !== itemIndex) return;
+
+    setStarted(true);
+    setDisplayedText(children);
+    sequence.completeItem(itemIndex);
+  }, [
+    children,
+    itemIndex,
+    sequence,
+    sequence?.activeIndex,
+    sequence?.sequenceStarted,
+    sequence?.skipSignal,
+  ]);
+
   return (
     <MotionComponent
       ref={elementRef}
@@ -221,7 +279,28 @@ export const Terminal = ({
   });
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [skipSignal, setSkipSignal] = useState(0);
+  const sequenceItemCount = useMemo(() => Children.count(children), [children]);
   const sequenceHasStarted = sequence ? !startOnView || isInView : false;
+
+  useEffect(() => {
+    if (!sequence) return;
+    if (!sequenceHasStarted) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== ENTER_KEY) return;
+      if (isEditableTarget(event.target)) return;
+      if (activeIndex >= sequenceItemCount) return;
+
+      event.preventDefault();
+      setSkipSignal((current) => current + 1);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [activeIndex, sequence, sequenceHasStarted, sequenceItemCount]);
 
   const contextValue = useMemo<SequenceContextValue | null>(() => {
     if (!sequence) return null;
@@ -233,8 +312,9 @@ export const Terminal = ({
       },
       activeIndex,
       sequenceStarted: sequenceHasStarted,
+      skipSignal,
     };
-  }, [sequence, activeIndex, sequenceHasStarted]);
+  }, [sequence, activeIndex, sequenceHasStarted, skipSignal]);
 
   const wrappedChildren = useMemo(() => {
     if (!sequence) return children;
